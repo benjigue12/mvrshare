@@ -36,10 +36,10 @@ function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const h = Math.floor(diff / 3600000)
   const d = Math.floor(diff / 86400000)
-  if (h < 1) return "à l'instant"
-  if (h < 24) return `il y a ${h}h`
-  if (d < 7) return `il y a ${d}j`
-  return new Date(dateStr).toLocaleDateString('fr-FR')
+  if (h < 1) return 'just now'
+  if (h < 24) return `${h}h ago`
+  if (d < 7) return `${d}d ago`
+  return new Date(dateStr).toLocaleDateString('en-US')
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -51,7 +51,7 @@ const TYPE_COLORS: Record<string, string> = {
   other:'bg-zinc-800 text-zinc-400 border border-zinc-700',
 }
 
-// ---- Composants ----
+// ---- Components ----
 function FileCard({ file }: { file: FileItem }) {
   const typeColor = TYPE_COLORS[file.file_type] ?? TYPE_COLORS.other
 
@@ -98,7 +98,7 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   )
 }
 
-// ---- Page principale ----
+// ---- Main Page ----
 export default function Home() {
   const [files, setFiles] = useState<FileItem[]>([])
   const [stats, setStats] = useState<SiteStats | null>(null)
@@ -109,14 +109,12 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      // Fichiers récents
       const { data: filesData } = await supabase
         .from('files_with_author')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(12)
 
-      // Stats globales
       const { data: statsData } = await supabase
         .from('site_stats')
         .select('*')
@@ -144,13 +142,14 @@ export default function Home() {
             MVR<span className="text-zinc-500">share</span>
           </span>
           <div className="flex items-center gap-6">
-            <a href="#galerie" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Galerie</a>
+            <a href="#gallery" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Gallery</a>
             <a href="#forum" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Forum</a>
+            <a href="#about" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">About</a>
             <span className="text-xs font-mono bg-amber-900/30 text-amber-400 border border-amber-700/40 px-2 py-1 rounded">
               OPEN SOURCE
             </span>
             <button className="text-sm bg-amber-400 text-zinc-950 font-medium px-4 py-1.5 rounded-lg hover:bg-amber-300 transition-colors">
-              Rejoindre
+              Join
             </button>
           </div>
         </div>
@@ -160,43 +159,40 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
         <div className="max-w-2xl">
           <h1 className="font-mono text-4xl font-bold leading-tight mb-5">
-            La bibliothèque ouverte<br />
-            des <span className="text-amber-400">light designers</span>
+            The open library for<br />
+            <span className="text-amber-400">lighting designers</span>
           </h1>
           <p className="text-zinc-400 text-lg leading-relaxed mb-8">
-            Partagez vos fichiers MVR, scènes 3D et patches GDTF avec la communauté.
-            Gratuit, open source, pour et par les techniciens lumière.
+            Share your MVR files, 3D scenes and GDTF patches with the community.
+            Free, open source, built by and for lighting professionals.
           </p>
           <div className="flex gap-3">
             <button className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
-              Explorer la galerie
+              Browse files
             </button>
             <button className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 hover:text-zinc-100 transition-colors">
-              Uploader un fichier
+              Upload a file
             </button>
           </div>
         </div>
 
-        {/* Stats */}
         {stats && (
           <div className="flex gap-12 mt-14 pt-10 border-t border-zinc-800">
-            <StatCard label="Fichiers MVR" value={stats.total_files.toLocaleString()} />
+            <StatCard label="MVR files" value={stats.total_files.toLocaleString()} />
             <StatCard label="Designers" value={stats.total_users.toLocaleString()} />
-            <StatCard label="Télécharg." value={stats.total_downloads.toLocaleString()} />
-            <StatCard label="Topics forum" value={stats.total_topics.toLocaleString()} />
+            <StatCard label="Downloads" value={stats.total_downloads.toLocaleString()} />
+            <StatCard label="Forum topics" value={stats.total_topics.toLocaleString()} />
           </div>
         )}
       </section>
 
-      {/* GALERIE */}
-      <section id="galerie" className="max-w-6xl mx-auto px-6 pb-20">
+      {/* GALLERY */}
+      <section id="gallery" className="max-w-6xl mx-auto px-6 pb-20">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// galerie</p>
-            <h2 className="text-2xl font-medium">Fichiers partagés récemment</h2>
+            <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// gallery</p>
+            <h2 className="text-2xl font-medium">Recently shared files</h2>
           </div>
-
-          {/* Filtres */}
           <div className="flex gap-2">
             {['all', 'mvr', 'gdtf', '3ds', 'blend'].map(type => (
               <button
@@ -208,7 +204,7 @@ export default function Home() {
                     : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'
                 }`}
               >
-                {type === 'all' ? 'Tous' : `.${type}`}
+                {type === 'all' ? 'All' : `.${type}`}
               </button>
             ))}
           </div>
@@ -230,8 +226,8 @@ export default function Home() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-zinc-500">
-            <p className="font-mono text-lg mb-2">Aucun fichier pour l'instant</p>
-            <p className="text-sm">Sois le premier à partager une scène !</p>
+            <p className="font-mono text-lg mb-2">No files yet</p>
+            <p className="text-sm">Be the first to share a scene!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -243,18 +239,18 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-zinc-800">
+      <section id="about" className="border-t border-zinc-800">
         <div className="max-w-6xl mx-auto px-6 py-20 text-center">
-          <h2 className="font-mono text-3xl font-bold mb-4">Rejoignez MVRshare</h2>
+          <h2 className="font-mono text-3xl font-bold mb-4">Join MVRshare</h2>
           <p className="text-zinc-400 max-w-md mx-auto mb-8">
-            Gratuit, sans pub, open source. Hébergez votre instance ou contribuez au code sur GitHub.
+            Free, no ads, open source. Self-host your own instance or contribute on GitHub.
           </p>
           <div className="flex gap-3 justify-center">
             <button className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
-              Créer un compte gratuit
+              Create a free account
             </button>
             <button className="border border-zinc-700 text-zinc-300 px-6 py-2.5 rounded-lg hover:border-zinc-500 transition-colors">
-              Voir sur GitHub
+              View on GitHub
             </button>
           </div>
           <div className="flex gap-3 justify-center mt-6">
