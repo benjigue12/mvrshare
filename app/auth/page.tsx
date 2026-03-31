@@ -28,6 +28,8 @@ export default function AuthPage() {
     if (error) {
       setMessage({ type: 'error', text: error.message })
       setLoading(false)
+    } else {
+      setTimeout(() => setLoading(false), 5000)
     }
   }
 
