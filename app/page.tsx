@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 
-// ---- Types ----
 type FileItem = {
   id: string
   title: string
@@ -25,7 +24,12 @@ type SiteStats = {
   total_topics: number
 }
 
-// ---- Helpers ----
+type Profile = {
+  username: string
+  display_name: string | null
+  avatar_url: string | null
+}
+
 function formatSize(bytes: number) {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`
@@ -51,10 +55,8 @@ const TYPE_COLORS: Record<string, string> = {
   other:'bg-zinc-800 text-zinc-400 border border-zinc-700',
 }
 
-// ---- Components ----
 function FileCard({ file }: { file: FileItem }) {
   const typeColor = TYPE_COLORS[file.file_type] ?? TYPE_COLORS.other
-
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-amber-700/50 transition-colors cursor-pointer group">
       <div className="flex items-start gap-3">
@@ -70,17 +72,13 @@ function FileCard({ file }: { file: FileItem }) {
           </p>
         </div>
       </div>
-
       {file.tags && file.tags.length > 0 && (
         <div className="flex gap-1.5 mt-3 flex-wrap">
           {file.tags.slice(0, 3).map(tag => (
-            <span key={tag} className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">
-              {tag}
-            </span>
+            <span key={tag} className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">{tag}</span>
           ))}
         </div>
       )}
-
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800">
         <span className="text-xs text-zinc-500 font-mono">↓ {file.download_count.toLocaleString()}</span>
         <span className="text-xs text-zinc-500 font-mono">♥ {file.like_count}</span>
@@ -98,17 +96,47 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   )
 }
 
-// ---- Main Page ----
+function Avatar({ profile }: { profile: Profile }) {
+  const initials = (profile.display_name ?? profile.username).slice(0, 2).toUpperCase()
+  if (profile.avatar_url) {
+    return (
+      <img
+        src={profile.avatar_url}
+        alt={profile.username}
+        className="w-8 h-8 rounded-full object-cover border border-zinc-700"
+      />
+    )
+  }
+  return (
+    <div className="w-8 h-8 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono">
+      {initials}
+    </div>
+  )
+}
+
 export default function Home() {
   const [files, setFiles] = useState<FileItem[]>([])
   const [stats, setStats] = useState<SiteStats | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const supabase = createClient()
 
   useEffect(() => {
     async function fetchData() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, display_name, avatar_url')
+          .eq('id', session.user.id)
+          .single()
+        if (profileData) setProfile(profileData)
+      }
+
       const { data: filesData } = await supabase
         .from('files_with_author')
         .select('*')
@@ -128,19 +156,22 @@ export default function Home() {
     fetchData()
   }, [])
 
-  const filtered = filter === 'all'
-    ? files
-    : files.filter(f => f.file_type === filter)
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    setProfile(null)
+    setMenuOpen(false)
+  }
+
+  const filtered = filter === 'all' ? files : files.filter(f => f.file_type === filter)
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
 
-      {/* NAV */}
       <nav className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-mono text-lg font-bold text-amber-400">
+          <a href="/" className="font-mono text-lg font-bold text-amber-400">
             MVR<span className="text-zinc-500">share</span>
-          </span>
+          </a>
           <div className="flex items-center gap-6">
             <a href="#gallery" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Gallery</a>
             <a href="#forum" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Forum</a>
@@ -148,14 +179,43 @@ export default function Home() {
             <span className="text-xs font-mono bg-amber-900/30 text-amber-400 border border-amber-700/40 px-2 py-1 rounded">
               OPEN SOURCE
             </span>
-            <a href="/auth" className="text-sm bg-amber-400 text-zinc-950 font-medium px-4 py-1.5 rounded-lg hover:bg-amber-300 transition-colors">
-             Join
-          </a>
+            {profile ? (
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                >
+                  <Avatar profile={profile} />
+                  <span className="text-sm text-zinc-300 font-mono">@{profile.username}</span>
+                  <span className="text-zinc-600 text-xs">▾</span>
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-10 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl w-48 py-1 z-50">
+                    <a href={`/profile/${profile.username}`} className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>
+                      My profile
+                    </a>
+                    <a href="/upload" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>
+                      Upload a file
+                    </a>
+                    <a href="/settings" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>
+                      Settings
+                    </a>
+                    <div className="border-t border-zinc-800 my-1" />
+                    <button onClick={handleSignOut} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 transition-colors">
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <a href="/auth" className="text-sm bg-amber-400 text-zinc-950 font-medium px-4 py-1.5 rounded-lg hover:bg-amber-300 transition-colors">
+                Join
+              </a>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* HERO */}
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
         <div className="max-w-2xl">
           <h1 className="font-mono text-4xl font-bold leading-tight mb-5">
@@ -167,15 +227,14 @@ export default function Home() {
             Free, open source, built by and for lighting professionals.
           </p>
           <div className="flex gap-3">
-            <button className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
+            <a href="#gallery" className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
               Browse files
-            </button>
-            <button className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 hover:text-zinc-100 transition-colors">
+            </a>
+            <a href={profile ? '/upload' : '/auth'} className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 hover:text-zinc-100 transition-colors">
               Upload a file
-            </button>
+            </a>
           </div>
         </div>
-
         {stats && (
           <div className="flex gap-12 mt-14 pt-10 border-t border-zinc-800">
             <StatCard label="MVR files" value={stats.total_files.toLocaleString()} />
@@ -186,7 +245,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* GALLERY */}
       <section id="gallery" className="max-w-6xl mx-auto px-6 pb-20">
         <div className="flex items-end justify-between mb-6">
           <div>
@@ -209,7 +267,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -238,7 +295,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* CTA */}
       <section id="about" className="border-t border-zinc-800">
         <div className="max-w-6xl mx-auto px-6 py-20 text-center">
           <h2 className="font-mono text-3xl font-bold mb-4">Join MVRshare</h2>
@@ -246,24 +302,23 @@ export default function Home() {
             Free, no ads, open source. Self-host your own instance or contribute on GitHub.
           </p>
           <div className="flex gap-3 justify-center">
-            <a href="/auth" className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
-            Create a free account
-            </a>
-            <button className="border border-zinc-700 text-zinc-300 px-6 py-2.5 rounded-lg hover:border-zinc-500 transition-colors">
+            {!profile && (
+              <a href="/auth" className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
+                Create a free account
+              </a>
+            )}
+            <a href="https://github.com/benjigue12/mvrshare" target="_blank" className="border border-zinc-700 text-zinc-300 px-6 py-2.5 rounded-lg hover:border-zinc-500 transition-colors">
               View on GitHub
-            </button>
+            </a>
           </div>
           <div className="flex gap-3 justify-center mt-6">
             {['MIT License', 'Self-hostable', 'No tracking', 'GDTF / MVR'].map(b => (
-              <span key={b} className="text-xs font-mono text-zinc-500 border border-zinc-800 px-3 py-1.5 rounded-full">
-                {b}
-              </span>
+              <span key={b} className="text-xs font-mono text-zinc-500 border border-zinc-800 px-3 py-1.5 rounded-full">{b}</span>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="border-t border-zinc-800">
         <div className="max-w-6xl mx-auto px-6 py-8 flex items-center justify-between">
           <span className="text-xs font-mono text-zinc-600">© 2025 MVRshare — open source community</span>
@@ -274,6 +329,10 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {menuOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+      )}
 
     </div>
   )
