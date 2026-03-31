@@ -148,9 +148,9 @@ export default function Home() {
             <span className="text-xs font-mono bg-amber-900/30 text-amber-400 border border-amber-700/40 px-2 py-1 rounded">
               OPEN SOURCE
             </span>
-            <button className="text-sm bg-amber-400 text-zinc-950 font-medium px-4 py-1.5 rounded-lg hover:bg-amber-300 transition-colors">
-              Join
-            </button>
+            <a href="/auth" className="text-sm bg-amber-400 text-zinc-950 font-medium px-4 py-1.5 rounded-lg hover:bg-amber-300 transition-colors">
+             Join
+          </a>
           </div>
         </div>
       </nav>
