@@ -246,9 +246,9 @@ export default function Home() {
             Free, no ads, open source. Self-host your own instance or contribute on GitHub.
           </p>
           <div className="flex gap-3 justify-center">
-            <button className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
-              Create a free account
-            </button>
+            <a href="/auth" className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
+            Create a free account
+            </a>
             <button className="border border-zinc-700 text-zinc-300 px-6 py-2.5 rounded-lg hover:border-zinc-500 transition-colors">
               View on GitHub
             </button>
