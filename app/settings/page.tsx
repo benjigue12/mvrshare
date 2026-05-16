@@ -11,11 +11,11 @@ export const SOFTWARE_OPTIONS = [
 
 export const SOFTWARE_COLORS: Record<string, string> = {
   'grandMA3':   'bg-zinc-900 text-white border-white/30',
-  'grandMA2':   'bg-yellow-400 text-zinc-900 border-yellow-300',
-  'Capture':    'bg-lime-500 text-zinc-900 border-lime-400',
-  'Vectorworks':'bg-cyan-500 text-zinc-900 border-cyan-400',
-  'Depence':    'bg-indigo-400 text-zinc-900 border-indigo-300',
-  'Wysiwyg':    'bg-orange-500 text-zinc-900 border-orange-400',
+  'grandMA2':   'bg-yellow-400 text-white border-yellow-300',
+  'Capture':    'bg-lime-500 text-white border-lime-400',
+  'Vectorworks':'bg-cyan-500 text-white border-cyan-400',
+  'Depence':    'bg-indigo-400 text-white border-indigo-300',
+  'Wysiwyg':    'bg-orange-500 text-white border-orange-400',
   'EOS':        'bg-violet-600 text-white border-violet-400',
   'Hog4':       'bg-fuchsia-500 text-white border-fuchsia-400',
   'Chamsys':    'bg-blue-800 text-white border-blue-600',
@@ -252,7 +252,7 @@ export default function SettingsPage() {
                   type="text"
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
-                  placeholder="Benjamin"
+                  placeholder="Alex"
                   maxLength={50}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
                 />
@@ -263,7 +263,7 @@ export default function SettingsPage() {
                   type="text"
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
-                  placeholder="Dupont"
+                  placeholder="Martin"
                   maxLength={50}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
                 />
