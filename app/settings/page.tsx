@@ -1,17 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 
 const SOFTWARE_OPTIONS = [
   'grandMA3', 'grandMA2', 'Capture', 'Vectorworks', 'Depence',
-  'Wysiwyg', 'EOS', 'Hog4', 'Chamsys', 'Resolume', 'Madmapper'
+  'Wysiwyg', 'EOS', 'Hog4', 'Chamsys', 'Avolites', 'Resolume', 'Madmapper'
 ]
 
 type Profile = {
   id: string
   username: string
-  display_name: string | null
   bio: string | null
   avatar_url: string | null
   location: string | null
@@ -23,16 +22,19 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [notAuth, setNotAuth] = useState(false)
 
-  // Champs du formulaire
-  const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
   const [software, setSoftware] = useState<string[]>([])
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -48,11 +50,12 @@ export default function SettingsPage() {
 
       if (data) {
         setProfile(data)
-        setDisplayName(data.display_name ?? '')
+        setUsername(data.username ?? '')
         setBio(data.bio ?? '')
         setLocation(data.location ?? '')
         setWebsite(data.website ?? '')
         setSoftware(data.software ?? [])
+        setAvatarUrl(data.avatar_url ?? null)
       }
 
       setLoading(false)
@@ -67,15 +70,63 @@ export default function SettingsPage() {
     )
   }
 
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !profile) return
+
+    const preview = URL.createObjectURL(file)
+    setAvatarPreview(preview)
+    setUploadingAvatar(true)
+    setMessage(null)
+
+    const ext = file.name.split('.').pop()
+    const path = `${profile.id}/avatar.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('mvr-files')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      setMessage({ type: 'error', text: 'Failed to upload avatar: ' + uploadError.message })
+      setAvatarPreview(null)
+      setUploadingAvatar(false)
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('mvr-files').getPublicUrl(path)
+    const newUrl = urlData.publicUrl + '?t=' + Date.now()
+    setAvatarUrl(newUrl)
+
+    await supabase.from('profiles').update({ avatar_url: newUrl }).eq('id', profile.id)
+    setUploadingAvatar(false)
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
     setMessage(null)
 
+    // Vérifier que le username n'est pas déjà pris
+    if (username !== profile?.username) {
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .single()
+
+      if (existing) {
+        setMessage({ type: 'error', text: 'This username is already taken.' })
+        setSaving(false)
+        return
+      }
+    }
+
+    const newUsername = username.toLowerCase().replace(/[^a-z0-9_]/g, '_')
+
     const { error } = await supabase
       .from('profiles')
       .update({
-        display_name: displayName || null,
+        username: newUsername,
         bio: bio || null,
         location: location || null,
         website: website || null,
@@ -85,12 +136,21 @@ export default function SettingsPage() {
 
     if (error) {
       setMessage({ type: 'error', text: error.message })
-    } else {
-      setMessage({ type: 'success', text: 'Profile updated successfully!' })
+      setSaving(false)
+      return
     }
+
+    // Afficher la banderole puis rediriger vers le profil
+    setMessage({ type: 'success', text: 'Profile saved!' })
+    setTimeout(() => {
+      window.location.href = `/profile/${newUsername}`
+    }, 1200)
 
     setSaving(false)
   }
+
+  const displayAvatar = avatarPreview ?? avatarUrl
+  const initials = username.slice(0, 2).toUpperCase()
 
   if (loading) {
     return (
@@ -136,50 +196,58 @@ export default function SettingsPage() {
           {/* Avatar */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
             <h2 className="text-sm font-medium text-zinc-300 mb-4">Avatar</h2>
-            <div className="flex items-center gap-4">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="avatar" className="w-16 h-16 rounded-full object-cover border-2 border-zinc-700" />
+            <div className="flex items-center gap-5">
+              {displayAvatar ? (
+                <img
+                  src={displayAvatar}
+                  alt="avatar"
+                  className={`w-20 h-20 rounded-full object-cover border-2 border-zinc-700 ${uploadingAvatar ? 'opacity-50' : ''}`}
+                />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-amber-900/40 border-2 border-amber-700/40 flex items-center justify-center text-xl font-bold text-amber-300 font-mono">
-                  {(displayName || profile?.username || '?').slice(0, 2).toUpperCase()}
+                <div className="w-20 h-20 rounded-full bg-amber-900/40 border-2 border-amber-700/40 flex items-center justify-center text-2xl font-bold text-amber-300 font-mono">
+                  {initials}
                 </div>
               )}
-              <div>
-                <p className="text-sm text-zinc-300">
-                  {profile?.avatar_url ? 'Avatar synced from your OAuth provider' : 'No avatar yet'}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Your avatar is automatically pulled from GitHub, Google, or Discord when you sign in with OAuth.
-                </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="text-sm bg-zinc-800 border border-zinc-700 text-zinc-300 px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                >
+                  {uploadingAvatar ? 'Uploading...' : 'Change photo'}
+                </button>
+                <p className="text-xs text-zinc-600">JPG, PNG or WEBP · Max 5 MB</p>
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
             </div>
           </div>
 
-          {/* Infos de base */}
+          {/* Infos */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
-            <h2 className="text-sm font-medium text-zinc-300">Basic info</h2>
+            <h2 className="text-sm font-medium text-zinc-300">Info</h2>
 
             <div>
               <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Username</label>
-              <input
-                type="text"
-                value={profile?.username ?? ''}
-                disabled
-                className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-500 font-mono cursor-not-allowed"
-              />
-              <p className="text-xs text-zinc-600 mt-1">Username cannot be changed for now.</p>
-            </div>
-
-            <div>
-              <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Display name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-                placeholder="Your full name or alias"
-                maxLength={60}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">@</span>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  maxLength={30}
+                  minLength={3}
+                  required
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-7 pr-3 py-2.5 text-sm text-zinc-100 font-mono placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
+                />
+              </div>
+              <p className="text-xs text-zinc-600 mt-1">Lowercase letters, numbers and underscores only.</p>
             </div>
 
             <div>
@@ -222,7 +290,7 @@ export default function SettingsPage() {
           {/* Logiciels */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
             <h2 className="text-sm font-medium text-zinc-300 mb-1">Software</h2>
-            <p className="text-xs text-zinc-500 mb-4">Select the lighting software you use.</p>
+            <p className="text-xs text-zinc-500 mb-4">Select the lighting software you use — displayed on your public profile.</p>
             <div className="flex flex-wrap gap-2">
               {SOFTWARE_OPTIONS.map(sw => (
                 <button
@@ -259,7 +327,7 @@ export default function SettingsPage() {
             </a>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploadingAvatar}
               className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors disabled:opacity-50 text-sm"
             >
               {saving ? 'Saving...' : 'Save changes'}
