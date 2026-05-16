@@ -3,14 +3,34 @@
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 
-const SOFTWARE_OPTIONS = [
+export const SOFTWARE_OPTIONS = [
   'grandMA3', 'grandMA2', 'Capture', 'Vectorworks', 'Depence',
-  'Wysiwyg', 'EOS', 'Hog4', 'Chamsys', 'Avolites', 'Resolume', 'Madmapper'
+  'Wysiwyg', 'EOS', 'Hog4', 'Chamsys', 'Avolites',
+  'Resolume', 'Madmapper', 'Smode', 'Millumin'
 ]
+
+export const SOFTWARE_COLORS: Record<string, string> = {
+  'grandMA3':   'bg-zinc-900 text-white border-white/30',
+  'grandMA2':   'bg-yellow-400 text-zinc-900 border-yellow-300',
+  'Capture':    'bg-lime-500 text-zinc-900 border-lime-400',
+  'Vectorworks':'bg-cyan-500 text-zinc-900 border-cyan-400',
+  'Depence':    'bg-indigo-400 text-zinc-900 border-indigo-300',
+  'Wysiwyg':    'bg-orange-500 text-zinc-900 border-orange-400',
+  'EOS':        'bg-violet-600 text-white border-violet-400',
+  'Hog4':       'bg-fuchsia-500 text-white border-fuchsia-400',
+  'Chamsys':    'bg-blue-800 text-white border-blue-600',
+  'Avolites':   'bg-red-600 text-white border-red-400',
+  'Resolume':   'bg-emerald-600 text-white border-emerald-400',
+  'Madmapper':  'bg-zinc-500 text-white border-zinc-400',
+  'Smode':      'bg-blue-500 text-white border-blue-400',
+  'Millumin':   'bg-pink-500 text-white border-pink-400',
+}
 
 type Profile = {
   id: string
   username: string
+  first_name: string | null
+  last_name: string | null
   bio: string | null
   avatar_url: string | null
   location: string | null
@@ -27,6 +47,8 @@ export default function SettingsPage() {
   const [notAuth, setNotAuth] = useState(false)
 
   const [username, setUsername] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [bio, setBio] = useState('')
   const [location, setLocation] = useState('')
   const [website, setWebsite] = useState('')
@@ -51,6 +73,8 @@ export default function SettingsPage() {
       if (data) {
         setProfile(data)
         setUsername(data.username ?? '')
+        setFirstName(data.first_name ?? '')
+        setLastName(data.last_name ?? '')
         setBio(data.bio ?? '')
         setLocation(data.location ?? '')
         setWebsite(data.website ?? '')
@@ -96,7 +120,6 @@ export default function SettingsPage() {
     const { data: urlData } = supabase.storage.from('mvr-files').getPublicUrl(path)
     const newUrl = urlData.publicUrl + '?t=' + Date.now()
     setAvatarUrl(newUrl)
-
     await supabase.from('profiles').update({ avatar_url: newUrl }).eq('id', profile.id)
     setUploadingAvatar(false)
   }
@@ -106,7 +129,6 @@ export default function SettingsPage() {
     setSaving(true)
     setMessage(null)
 
-    // Vérifier que le username n'est pas déjà pris
     if (username !== profile?.username) {
       const { data: existing } = await supabase
         .from('profiles')
@@ -127,6 +149,8 @@ export default function SettingsPage() {
       .from('profiles')
       .update({
         username: newUsername,
+        first_name: firstName || null,
+        last_name: lastName || null,
         bio: bio || null,
         location: location || null,
         website: website || null,
@@ -140,7 +164,6 @@ export default function SettingsPage() {
       return
     }
 
-    // Afficher la banderole puis rediriger vers le profil
     setMessage({ type: 'success', text: 'Profile saved!' })
     setTimeout(() => {
       window.location.href = `/profile/${newUsername}`
@@ -150,7 +173,7 @@ export default function SettingsPage() {
   }
 
   const displayAvatar = avatarPreview ?? avatarUrl
-  const initials = username.slice(0, 2).toUpperCase()
+  const initials = ((firstName?.[0] ?? '') + (lastName?.[0] ?? '')) || username.slice(0, 2).toUpperCase()
 
   if (loading) {
     return (
@@ -172,7 +195,6 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
 
-      {/* NAV */}
       <nav className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60">
         <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
           <a href="/" className="font-mono text-lg font-bold text-amber-400">
@@ -185,7 +207,6 @@ export default function SettingsPage() {
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-10">
-
         <div className="mb-8">
           <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// settings</p>
           <h1 className="text-2xl font-medium">Edit profile</h1>
@@ -198,11 +219,7 @@ export default function SettingsPage() {
             <h2 className="text-sm font-medium text-zinc-300 mb-4">Avatar</h2>
             <div className="flex items-center gap-5">
               {displayAvatar ? (
-                <img
-                  src={displayAvatar}
-                  alt="avatar"
-                  className={`w-20 h-20 rounded-full object-cover border-2 border-zinc-700 ${uploadingAvatar ? 'opacity-50' : ''}`}
-                />
+                <img src={displayAvatar} alt="avatar" className={`w-20 h-20 rounded-full object-cover border-2 border-zinc-700 ${uploadingAvatar ? 'opacity-50' : ''}`} />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-amber-900/40 border-2 border-amber-700/40 flex items-center justify-center text-2xl font-bold text-amber-300 font-mono">
                   {initials}
@@ -219,13 +236,7 @@ export default function SettingsPage() {
                 </button>
                 <p className="text-xs text-zinc-600">JPG, PNG or WEBP · Max 5 MB</p>
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="hidden" />
             </div>
           </div>
 
@@ -233,6 +244,33 @@ export default function SettingsPage() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
             <h2 className="text-sm font-medium text-zinc-300">Info</h2>
 
+            {/* Prénom / Nom */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-zinc-500 font-mono mb-1.5 block">First name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={e => setFirstName(e.target.value)}
+                  placeholder="Benjamin"
+                  maxLength={50}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Last name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={e => setLastName(e.target.value)}
+                  placeholder="Dupont"
+                  maxLength={50}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Username */}
             <div>
               <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Username</label>
               <div className="relative">
@@ -250,6 +288,7 @@ export default function SettingsPage() {
               <p className="text-xs text-zinc-600 mt-1">Lowercase letters, numbers and underscores only.</p>
             </div>
 
+            {/* Bio */}
             <div>
               <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Bio</label>
               <textarea
@@ -263,6 +302,7 @@ export default function SettingsPage() {
               <p className="text-xs text-zinc-600 mt-1 text-right">{bio.length}/300</p>
             </div>
 
+            {/* Location */}
             <div>
               <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Location</label>
               <input
@@ -275,6 +315,7 @@ export default function SettingsPage() {
               />
             </div>
 
+            {/* Website */}
             <div>
               <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Website</label>
               <input
@@ -289,18 +330,17 @@ export default function SettingsPage() {
 
           {/* Logiciels */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-medium text-zinc-300 mb-1">Software</h2>
-            <p className="text-xs text-zinc-500 mb-4">Select the lighting software you use — displayed on your public profile.</p>
+            <h2 className="text-sm font-medium text-zinc-300 mb-4">Software</h2>
             <div className="flex flex-wrap gap-2">
               {SOFTWARE_OPTIONS.map(sw => (
                 <button
                   key={sw}
                   type="button"
                   onClick={() => toggleSoftware(sw)}
-                  className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-colors ${
+                  className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all ${
                     software.includes(sw)
-                      ? 'bg-amber-400 text-zinc-950 border-amber-400'
-                      : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-200'
+                      ? SOFTWARE_COLORS[sw]
+                      : 'bg-zinc-800 text-zinc-500 border-zinc-700 hover:border-zinc-500 hover:text-zinc-300'
                   }`}
                 >
                   {sw}

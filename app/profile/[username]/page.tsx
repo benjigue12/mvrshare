@@ -8,7 +8,8 @@ import { createClient } from '@/lib/supabase'
 type Profile = {
   id: string
   username: string
-  display_name: string | null
+  first_name: string | null
+  last_name: string | null
   bio: string | null
   avatar_url: string | null
   location: string | null
@@ -36,6 +37,33 @@ type Stats = {
   following_count: number
 }
 
+// ---- Couleurs de marque ----
+const SOFTWARE_COLORS: Record<string, string> = {
+  'grandMA3':   'bg-zinc-900 text-white border-white/30',
+  'grandMA2':   'bg-yellow-400 text-zinc-900 border-yellow-300',
+  'Capture':    'bg-lime-500 text-zinc-900 border-lime-400',
+  'Vectorworks':'bg-cyan-500 text-zinc-900 border-cyan-400',
+  'Depence':    'bg-indigo-400 text-zinc-900 border-indigo-300',
+  'Wysiwyg':    'bg-orange-500 text-zinc-900 border-orange-400',
+  'EOS':        'bg-violet-600 text-white border-violet-400',
+  'Hog4':       'bg-fuchsia-500 text-white border-fuchsia-400',
+  'Chamsys':    'bg-blue-800 text-white border-blue-600',
+  'Avolites':   'bg-red-600 text-white border-red-400',
+  'Resolume':   'bg-emerald-600 text-white border-emerald-400',
+  'Madmapper':  'bg-zinc-500 text-white border-zinc-400',
+  'Smode':      'bg-blue-500 text-white border-blue-400',
+  'Millumin':   'bg-pink-500 text-white border-pink-400',
+}
+
+const TYPE_COLORS: Record<string, string> = {
+  mvr:  'bg-amber-900/30 text-amber-300 border border-amber-700/40',
+  gdtf: 'bg-purple-900/30 text-purple-300 border border-purple-700/40',
+  '3ds':'bg-blue-900/30 text-blue-300 border border-blue-700/40',
+  obj:  'bg-blue-900/30 text-blue-300 border border-blue-700/40',
+  blend:'bg-green-900/30 text-green-300 border border-green-700/40',
+  other:'bg-zinc-800 text-zinc-400 border border-zinc-700',
+}
+
 // ---- Helpers ----
 function formatSize(bytes: number) {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
@@ -53,25 +81,6 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US')
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  mvr:  'bg-amber-900/30 text-amber-300 border border-amber-700/40',
-  gdtf: 'bg-purple-900/30 text-purple-300 border border-purple-700/40',
-  '3ds':'bg-blue-900/30 text-blue-300 border border-blue-700/40',
-  obj:  'bg-blue-900/30 text-blue-300 border border-blue-700/40',
-  blend:'bg-green-900/30 text-green-300 border border-green-700/40',
-  other:'bg-zinc-800 text-zinc-400 border border-zinc-700',
-}
-
-const SOFTWARE_COLORS: Record<string, string> = {
-  'grandMA3': 'bg-yellow-900/30 text-yellow-300 border-yellow-700/40',
-  'grandMA2': 'bg-yellow-900/20 text-yellow-400 border-yellow-700/30',
-  'Capture': 'bg-blue-900/30 text-blue-300 border-blue-700/40',
-  'Vectorworks': 'bg-green-900/30 text-green-300 border-green-700/40',
-  'Depence': 'bg-purple-900/30 text-purple-300 border-purple-700/40',
-  'Wysiwyg': 'bg-red-900/30 text-red-300 border-red-700/40',
-  'EOS': 'bg-orange-900/30 text-orange-300 border-orange-700/40',
-}
-
 // ---- Main Page ----
 export default function ProfilePage() {
   const params = useParams()
@@ -86,18 +95,16 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [activeTab, setActiveTab] = useState<'files' | 'followers' | 'following'>('files')
-  const [followers, setFollowers] = useState<Profile[]>([])
-  const [following, setFollowing] = useState<Profile[]>([])
+  const [followers, setFollowers] = useState<any[]>([])
+  const [following, setFollowing] = useState<any[]>([])
 
   const supabase = createClient()
 
   useEffect(() => {
     async function fetchData() {
-      // Session courante
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) setCurrentUserId(session.user.id)
 
-      // Profil de la page
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -107,7 +114,6 @@ export default function ProfilePage() {
       if (!profileData) { setNotFound(true); setLoading(false); return }
       setProfile(profileData)
 
-      // Fichiers de l'utilisateur
       const { data: filesData } = await supabase
         .from('files')
         .select('id, title, file_type, file_size, download_count, like_count, created_at, tags')
@@ -118,23 +124,20 @@ export default function ProfilePage() {
 
       if (filesData) setFiles(filesData)
 
-      // Stats agrégées
       const totalDownloads = (filesData ?? []).reduce((sum, f) => sum + f.download_count, 0)
       const totalLikes = (filesData ?? []).reduce((sum, f) => sum + f.like_count, 0)
 
-      // Followers
       const { data: followersData } = await supabase
         .from('follows')
-        .select('follower_id, profiles!follows_follower_id_fkey(id, username, display_name, avatar_url)')
+        .select('follower_id, profiles!follows_follower_id_fkey(id, username, first_name, last_name, avatar_url)')
         .eq('following_id', profileData.id)
 
       const followersList = (followersData ?? []).map((f: any) => f.profiles).filter(Boolean)
       setFollowers(followersList)
 
-      // Following
       const { data: followingData } = await supabase
         .from('follows')
-        .select('following_id, profiles!follows_following_id_fkey(id, username, display_name, avatar_url)')
+        .select('following_id, profiles!follows_following_id_fkey(id, username, first_name, last_name, avatar_url)')
         .eq('follower_id', profileData.id)
 
       const followingList = (followingData ?? []).map((f: any) => f.profiles).filter(Boolean)
@@ -148,7 +151,6 @@ export default function ProfilePage() {
         following_count: followingList.length,
       })
 
-      // Est-ce que je suis déjà cet utilisateur ?
       if (session?.user) {
         const { data: followData } = await supabase
           .from('follows')
@@ -176,10 +178,7 @@ export default function ProfilePage() {
       setIsFollowing(false)
       setStats(s => ({ ...s, followers_count: s.followers_count - 1 }))
     } else {
-      await supabase.from('follows').insert({
-        follower_id: currentUserId,
-        following_id: profile.id,
-      })
+      await supabase.from('follows').insert({ follower_id: currentUserId, following_id: profile.id })
       setIsFollowing(true)
       setStats(s => ({ ...s, followers_count: s.followers_count + 1 }))
     }
@@ -188,6 +187,18 @@ export default function ProfilePage() {
   }
 
   const isOwnProfile = currentUserId === profile?.id
+
+  // Nom affiché : "Prénom Nom" si renseignés, sinon username
+  function getDisplayName(p: Profile) {
+    const full = [p.first_name, p.last_name].filter(Boolean).join(' ')
+    return full || p.username
+  }
+
+  function getUserInitials(p: { first_name?: string | null; last_name?: string | null; username: string }) {
+    const f = p.first_name?.[0] ?? ''
+    const l = p.last_name?.[0] ?? ''
+    return (f + l) || p.username.slice(0, 2).toUpperCase()
+  }
 
   if (loading) {
     return (
@@ -205,8 +216,6 @@ export default function ProfilePage() {
       </div>
     )
   }
-
-  const avatarInitials = (profile!.display_name ?? profile!.username).slice(0, 2).toUpperCase()
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -232,33 +241,27 @@ export default function ProfilePage() {
 
         {/* HEADER PROFIL */}
         <div className="flex items-start gap-6 mb-8">
-
-          {/* Avatar */}
           <div className="flex-shrink-0">
             {profile!.avatar_url ? (
-              <img
-                src={profile!.avatar_url}
-                alt={profile!.username}
-                className="w-20 h-20 rounded-full object-cover border-2 border-zinc-700"
-              />
+              <img src={profile!.avatar_url} alt={profile!.username} className="w-20 h-20 rounded-full object-cover border-2 border-zinc-700" />
             ) : (
               <div className="w-20 h-20 rounded-full bg-amber-900/40 border-2 border-amber-700/40 flex items-center justify-center text-2xl font-bold text-amber-300 font-mono">
-                {avatarInitials}
+                {getUserInitials(profile!)}
               </div>
             )}
           </div>
 
-          {/* Infos */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
+                {/* Nom complet en grand */}
                 <h1 className="text-2xl font-semibold text-zinc-100">
-                  {profile!.display_name ?? profile!.username}
+                  {getDisplayName(profile!)}
                 </h1>
+                {/* Username en petit */}
                 <p className="text-zinc-500 font-mono text-sm mt-0.5">@{profile!.username}</p>
               </div>
 
-              {/* Bouton follow */}
               {!isOwnProfile && currentUserId && (
                 <button
                   onClick={handleFollow}
@@ -280,17 +283,13 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Bio */}
             {profile!.bio && (
               <p className="text-zinc-300 text-sm mt-3 leading-relaxed max-w-xl">{profile!.bio}</p>
             )}
 
-            {/* Méta */}
             <div className="flex items-center gap-4 mt-3 flex-wrap">
               {profile!.location && (
-                <span className="text-xs text-zinc-500 flex items-center gap-1">
-                  📍 {profile!.location}
-                </span>
+                <span className="text-xs text-zinc-500 flex items-center gap-1">📍 {profile!.location}</span>
               )}
               {profile!.website && (
                 <a href={profile!.website} target="_blank" className="text-xs text-amber-400 hover:underline">
@@ -302,7 +301,7 @@ export default function ProfilePage() {
               </span>
             </div>
 
-            {/* Logiciels */}
+            {/* Softwares avec couleurs de marque */}
             {profile!.software && profile!.software.length > 0 && (
               <div className="flex gap-2 mt-3 flex-wrap">
                 {profile!.software.map(sw => (
@@ -341,12 +340,10 @@ export default function ProfilePage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
-                activeTab === tab
-                  ? 'bg-zinc-700 text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                activeTab === tab ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              {tab} {tab === 'files' ? `(${stats.total_files})` : tab === 'followers' ? `(${stats.followers_count})` : `(${stats.following_count})`}
+              {tab} ({tab === 'files' ? stats.total_files : tab === 'followers' ? stats.followers_count : stats.following_count})
             </button>
           ))}
         </div>
@@ -370,12 +367,8 @@ export default function ProfilePage() {
                         {file.file_type.toUpperCase().slice(0, 4)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-zinc-100 truncate group-hover:text-amber-300 transition-colors">
-                          {file.title}
-                        </h3>
-                        <p className="text-xs text-zinc-500 mt-0.5 font-mono">
-                          {formatSize(file.file_size)} · {timeAgo(file.created_at)}
-                        </p>
+                        <h3 className="text-sm font-medium text-zinc-100 truncate group-hover:text-amber-300 transition-colors">{file.title}</h3>
+                        <p className="text-xs text-zinc-500 mt-0.5 font-mono">{formatSize(file.file_size)} · {timeAgo(file.created_at)}</p>
                       </div>
                     </div>
                     {file.tags && file.tags.length > 0 && (
@@ -396,63 +389,28 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* TAB FOLLOWERS */}
-        {activeTab === 'followers' && (
+        {/* TAB FOLLOWERS / FOLLOWING */}
+        {(activeTab === 'followers' || activeTab === 'following') && (
           <div>
-            {followers.length === 0 ? (
+            {(activeTab === 'followers' ? followers : following).length === 0 ? (
               <div className="text-center py-16 text-zinc-500">
-                <p className="font-mono">No followers yet</p>
+                <p className="font-mono">{activeTab === 'followers' ? 'No followers yet' : 'Not following anyone yet'}</p>
               </div>
             ) : (
               <div className="flex flex-col gap-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-                {followers.map((f: any) => (
-                  <a
-                    key={f.id}
-                    href={`/profile/${f.username}`}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800 transition-colors"
-                  >
+                {(activeTab === 'followers' ? followers : following).map((f: any) => (
+                  <a key={f.id} href={`/profile/${f.username}`} className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800 transition-colors">
                     {f.avatar_url ? (
                       <img src={f.avatar_url} alt={f.username} className="w-9 h-9 rounded-full object-cover border border-zinc-700" />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono">
-                        {(f.display_name ?? f.username).slice(0, 2).toUpperCase()}
+                        {getUserInitials(f)}
                       </div>
                     )}
                     <div>
-                      <p className="text-sm font-medium text-zinc-100">{f.display_name ?? f.username}</p>
-                      <p className="text-xs text-zinc-500 font-mono">@{f.username}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB FOLLOWING */}
-        {activeTab === 'following' && (
-          <div>
-            {following.length === 0 ? (
-              <div className="text-center py-16 text-zinc-500">
-                <p className="font-mono">Not following anyone yet</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-                {following.map((f: any) => (
-                  <a
-                    key={f.id}
-                    href={`/profile/${f.username}`}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800 transition-colors"
-                  >
-                    {f.avatar_url ? (
-                      <img src={f.avatar_url} alt={f.username} className="w-9 h-9 rounded-full object-cover border border-zinc-700" />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono">
-                        {(f.display_name ?? f.username).slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-medium text-zinc-100">{f.display_name ?? f.username}</p>
+                      <p className="text-sm font-medium text-zinc-100">
+                        {[f.first_name, f.last_name].filter(Boolean).join(' ') || f.username}
+                      </p>
                       <p className="text-xs text-zinc-500 font-mono">@{f.username}</p>
                     </div>
                   </a>
