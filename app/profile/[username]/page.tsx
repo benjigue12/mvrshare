@@ -39,12 +39,12 @@ type Stats = {
 
 // ---- Couleurs de marque ----
 const SOFTWARE_COLORS: Record<string, string> = {
-  'grandMA3':   'bg-zinc-900 text-white border-white/30',
+  'grandMA3':   'bg-zinc-800 text-white border-white/600',
   'grandMA2':   'bg-yellow-400 text-zinc-900 border-yellow-300',
-  'Capture':    'bg-lime-500 text-zinc-900 border-lime-400',
-  'Vectorworks':'bg-cyan-500 text-zinc-900 border-cyan-400',
-  'Depence':    'bg-indigo-400 text-zinc-900 border-indigo-300',
-  'Wysiwyg':    'bg-orange-500 text-zinc-900 border-orange-400',
+  'Capture':    'bg-lime-500 text-white border-lime-400',
+  'Vectorworks':'bg-cyan-500 text-white border-cyan-400',
+  'Depence':    'bg-indigo-400 text-white border-indigo-300',
+  'Wysiwyg':    'bg-orange-500 text-white border-orange-400',
   'EOS':        'bg-violet-600 text-white border-violet-400',
   'Hog4':       'bg-fuchsia-500 text-white border-fuchsia-400',
   'Chamsys':    'bg-blue-800 text-white border-blue-600',
