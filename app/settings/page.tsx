@@ -10,8 +10,8 @@ export const SOFTWARE_OPTIONS = [
 ]
 
 export const SOFTWARE_COLORS: Record<string, string> = {
-  'grandMA3':   'bg-zinc-900 text-white border-white/30',
-  'grandMA2':   'bg-yellow-400 text-white border-yellow-300',
+  'grandMA3':   'bg-zinc-800 text-white border-white/600',
+  'grandMA2':   'bg-yellow-400 text-zinc-900 border-yellow-300',
   'Capture':    'bg-lime-500 text-white border-lime-400',
   'Vectorworks':'bg-cyan-500 text-white border-cyan-400',
   'Depence':    'bg-indigo-400 text-white border-indigo-300',
