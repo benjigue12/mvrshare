@@ -10,20 +10,19 @@ export default function AuthPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
+  const [acceptTerms, setAcceptTerms] = useState(false)
+  const [acceptNewsletter, setAcceptNewsletter] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null)
 
   const supabase = createClient()
 
-  // ---- OAuth ----
   async function signInWithProvider(provider: 'github' | 'google' | 'discord' | 'facebook') {
     setLoading(true)
     setMessage(null)
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     })
     if (error) {
       setMessage({ type: 'error', text: error.message })
@@ -33,14 +32,11 @@ export default function AuthPage() {
     }
   }
 
-  // ---- Email login ----
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
-
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-
     if (error) {
       setMessage({ type: 'error', text: error.message })
     } else {
@@ -49,23 +45,28 @@ export default function AuthPage() {
     setLoading(false)
   }
 
-  // ---- Email signup ----
   async function handleEmailSignup(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
-    setMessage(null)
-
-    if (username.length < 3) {
-      setMessage({ type: 'error', text: 'Username must be at least 3 characters.' })
-      setLoading(false)
+    if (!acceptTerms) {
+      setMessage({ type: 'error', text: 'You must accept the Terms and Conditions to create an account.' })
       return
     }
+    if (username.length < 3) {
+      setMessage({ type: 'error', text: 'Username must be at least 3 characters.' })
+      return
+    }
+    setLoading(true)
+    setMessage(null)
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: username },
+        data: {
+          username,
+          newsletter_consent: acceptNewsletter,
+          terms_accepted_at: new Date().toISOString(),
+        },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
@@ -73,7 +74,7 @@ export default function AuthPage() {
     if (error) {
       setMessage({ type: 'error', text: error.message })
     } else {
-      setMessage({ type: 'success', text: 'Check your email to confirm your account!' })
+      setMessage({ type: 'success', text: 'Account created! You can now sign in.' })
     }
     setLoading(false)
   }
@@ -87,7 +88,7 @@ export default function AuthPage() {
           <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
         </svg>
       ),
-      bg: 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700',
+      bg: 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-100',
     },
     {
       id: 'google' as const,
@@ -125,10 +126,9 @@ export default function AuthPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <a href="/" className="font-mono text-2xl font-bold text-amber-400">
             MVR<span className="text-zinc-500">share</span>
@@ -138,34 +138,25 @@ export default function AuthPage() {
           </p>
         </div>
 
-        {/* Card */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
 
-          {/* Mode tabs */}
+          {/* Tabs */}
           <div className="flex bg-zinc-800 rounded-lg p-1 mb-6">
             <button
               onClick={() => { setMode('login'); setMessage(null) }}
-              className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${
-                mode === 'login'
-                  ? 'bg-zinc-700 text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-300'
-              }`}
+              className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${mode === 'login' ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
               Sign in
             </button>
             <button
               onClick={() => { setMode('signup'); setMessage(null) }}
-              className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${
-                mode === 'signup'
-                  ? 'bg-zinc-700 text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-300'
-              }`}
+              className={`flex-1 text-sm py-1.5 rounded-md transition-colors font-medium ${mode === 'signup' ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
               Sign up
             </button>
           </div>
 
-          {/* OAuth buttons */}
+          {/* OAuth */}
           <div className="flex flex-col gap-2 mb-5">
             {providers.map(p => (
               <button
@@ -187,7 +178,7 @@ export default function AuthPage() {
             <div className="flex-1 h-px bg-zinc-800" />
           </div>
 
-          {/* Email form */}
+          {/* Form */}
           <form onSubmit={mode === 'login' ? handleEmailLogin : handleEmailSignup} className="flex flex-col gap-3">
             {mode === 'signup' && (
               <input
@@ -217,19 +208,53 @@ export default function AuthPage() {
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
             />
 
+            {/* Cases à cocher signup uniquement */}
+            {mode === 'signup' && (
+              <div className="flex flex-col gap-3 mt-1 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
+
+                {/* T&C — obligatoire */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={e => setAcceptTerms(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-amber-400 focus:ring-amber-500 focus:ring-offset-zinc-900 flex-shrink-0 cursor-pointer"
+                  />
+                  <span className="text-xs text-zinc-400 leading-relaxed">
+                    I have read and accept the{' '}
+                    <a href="/terms" target="_blank" className="text-amber-400 hover:underline">Terms and Conditions</a>
+                    {' '}and the{' '}
+                    <a href="/privacy" target="_blank" className="text-amber-400 hover:underline">Privacy Policy</a>.
+                    {' '}<span className="text-red-400">*</span>
+                  </span>
+                </label>
+
+                {/* Newsletter — optionnel */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptNewsletter}
+                    onChange={e => setAcceptNewsletter(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-amber-400 focus:ring-amber-500 focus:ring-offset-zinc-900 flex-shrink-0 cursor-pointer"
+                  />
+                  <span className="text-xs text-zinc-400 leading-relaxed">
+                    I agree to receive the MVRshare newsletter — platform updates, new files, and community news.
+                    You can unsubscribe at any time. <span className="text-zinc-600">(optional)</span>
+                  </span>
+                </label>
+
+              </div>
+            )}
+
             {message && (
-              <div className={`text-xs px-3 py-2 rounded-lg ${
-                message.type === 'error'
-                  ? 'bg-red-900/30 text-red-400 border border-red-800'
-                  : 'bg-green-900/30 text-green-400 border border-green-800'
-              }`}>
+              <div className={`text-xs px-3 py-2 rounded-lg ${message.type === 'error' ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-green-900/30 text-green-400 border border-green-800'}`}>
                 {message.text}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (mode === 'signup' && !acceptTerms)}
               className="w-full bg-amber-400 text-zinc-950 font-medium py-2.5 rounded-lg hover:bg-amber-300 transition-colors disabled:opacity-50 text-sm mt-1"
             >
               {loading ? 'Loading...' : mode === 'login' ? 'Sign in' : 'Create account'}
@@ -240,9 +265,9 @@ export default function AuthPage() {
 
         <p className="text-center text-xs text-zinc-600 mt-6">
           By joining, you agree to our{' '}
-          <a href="#" className="text-zinc-500 hover:text-zinc-300">Terms</a>
+          <a href="/terms" className="text-zinc-500 hover:text-zinc-300">Terms</a>
           {' '}and{' '}
-          <a href="#" className="text-zinc-500 hover:text-zinc-300">Privacy Policy</a>
+          <a href="/privacy" className="text-zinc-500 hover:text-zinc-300">Privacy Policy</a>
         </p>
 
       </div>
