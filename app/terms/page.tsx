@@ -80,6 +80,10 @@ export default function TermsPage() {
               <li>Use automated tools to scrape, crawl, or harvest content without our express written consent.</li>
               <li>Engage in any activity that disrupts or interferes with the Platform's functionality.</li>
             </ul>
+            <p className="mt-3">
+              We reserve the right to modify, suspend, or discontinue any part of the Platform at any time
+              and without liability. We will endeavour to provide reasonable notice where practicable.
+            </p>
           </section>
 
           <section>
@@ -107,8 +111,17 @@ export default function TermsPage() {
             <p>
               Content you publish on the Platform — including uploaded files, profile information, comments,
               and forum posts — may be publicly accessible and potentially indexed by search engines.
-              By publishing content, you acknowledge and accept this public visibility. If you wish to
-              remove public content, you may do so at any time via your account settings or by contacting us.
+              By publishing content, you acknowledge and accept this public visibility.
+            </p>
+            <p className="mt-3">
+              The terms under which your uploaded files may be reused, downloaded, modified, or redistributed
+              by other users are determined by the license you select at the time of upload (e.g. CC0, CC BY,
+              CC BY-SA, MIT). You are solely responsible for selecting a license that accurately reflects the
+              rights you hold and wish to grant.
+            </p>
+            <p className="mt-3">
+              If you wish to remove public content, you may do so at any time via your account settings
+              or by contacting us at <span className="text-amber-400">legal@mvrshare.com</span>.
             </p>
           </section>
 
@@ -124,13 +137,14 @@ export default function TermsPage() {
               <li>The files do not contain confidential or proprietary information belonging to third parties
                 (including clients, employers, or production companies) unless you have explicit authorization
                 to share such information.</li>
-              <li>GDTF and MVR files shared comply with the applicable open standards and do not embed
-                proprietary data from third-party manufacturers beyond what is publicly licensed.</li>
+              <li>GDTF and MVR files shared comply with applicable open standards and do not embed proprietary
+                data from third-party manufacturers beyond what is publicly licensed.</li>
             </ul>
             <p className="mt-3">
-              MVRshare does not accept responsibility for content uploaded by users. We reserve the right to
-              remove any file that we reasonably believe infringes intellectual property rights or violates
-              these Terms, without prior notice.
+              We do not verify the accuracy, safety, technical compatibility, or reliability of files uploaded
+              by users. Files are used at the downloader's own risk. MVRshare accepts no responsibility for
+              issues arising from the use of user-uploaded content, including but not limited to corrupt files,
+              incompatible fixture profiles, or inaccurate scene data.
             </p>
           </section>
 
@@ -144,26 +158,53 @@ export default function TermsPage() {
               content or use it for commercial purposes outside of the Platform.
             </p>
             <p className="mt-3">
-              <strong className="text-zinc-100">Licenses applied to shared files:</strong> When uploading a
-              file, you may choose the license under which it is shared (e.g. CC0, CC BY, CC BY-SA, MIT).
-              You are solely responsible for ensuring the selected license accurately reflects the rights
-              you hold and intend to grant.
+              <strong className="text-zinc-100">File licenses:</strong> When uploading a file, you select
+              the license under which it is shared. You are solely responsible for ensuring the selected
+              license accurately reflects the rights you hold and intend to grant to other users.
+            </p>
+            <p className="mt-3">
+              <strong className="text-zinc-100">Third-party trademarks:</strong> All third-party trademarks,
+              product names, and manufacturer names (including but not limited to lighting fixture manufacturers
+              and software vendors) referenced on this Platform remain the property of their respective owners
+              and are used solely for identification and interoperability purposes. Their appearance on
+              MVRshare does not imply any affiliation with or endorsement by those companies.
             </p>
             <p className="mt-3">
               <strong className="text-zinc-100">MVRshare Platform:</strong> The MVRshare codebase is
               open-source and released under the MIT License. The MVRshare name, logo, and branding are
               the property of Benjamin Gueyte and may not be used without prior written consent.
             </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-zinc-100 mb-3">9. Copyright Infringement and Takedown Procedure</h2>
+            <p>
+              We respect intellectual property rights. If you believe that content available on the Platform
+              infringes your copyright or other intellectual property rights, please notify us at{' '}
+              <span className="text-amber-400">legal@mvrshare.com</span> with the following information:
+            </p>
+            <ul className="list-disc pl-6 mt-2 space-y-1">
+              <li>A description of the copyrighted work or other intellectual property you claim has been infringed.</li>
+              <li>A description of where the allegedly infringing content is located on the Platform.</li>
+              <li>Your contact information (name, email address).</li>
+              <li>A statement that you have a good-faith belief that the use is not authorized by the rights holder.</li>
+              <li>A statement that the information in your notice is accurate.</li>
+            </ul>
             <p className="mt-3">
-              <strong className="text-zinc-100">Reporting infringement:</strong> If you believe content on
-              the Platform infringes your intellectual property rights, please contact us at{' '}
-              <span className="text-amber-400">legal@mvrshare.com</span> with a detailed description and
-              proof of ownership. We will investigate and take appropriate action promptly.
+              We reserve the right to remove allegedly infringing content pending investigation, without
+              prior notice. If you believe content was removed in error, you may submit a counter-notice
+              to <span className="text-amber-400">legal@mvrshare.com</span> explaining why the content
+              does not infringe the claimed rights. We will review counter-notices and restore content
+              where appropriate.
+            </p>
+            <p className="mt-3">
+              Users who repeatedly upload content that infringes third-party intellectual property rights
+              may have their accounts suspended or permanently terminated.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-100 mb-3">9. Communications and Newsletter</h2>
+            <h2 className="text-xl font-semibold text-zinc-100 mb-3">10. Communications and Newsletter</h2>
             <p>
               By creating an account on MVRshare, you agree to receive essential transactional emails
               related to your account (e.g. account confirmation, security alerts, service notifications).
@@ -180,29 +221,32 @@ export default function TermsPage() {
               <li>Occasional information about partnerships or products relevant to the lighting design industry.</li>
             </ul>
             <p className="mt-3">
-              Marketing communications will only be sent if you have explicitly opted in. You may withdraw
-              your consent and unsubscribe at any time by clicking the "Unsubscribe" link in any email,
-              or by updating your preferences in your account settings. Withdrawal of consent will not
-              affect the lawfulness of processing carried out before withdrawal.
+              You may withdraw your newsletter consent and unsubscribe at any time by clicking the
+              "Unsubscribe" link in any email or via your account settings. Withdrawal of consent will
+              not affect the lawfulness of processing carried out before withdrawal.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-100 mb-3">10. Disclaimer and Limitation of Liability</h2>
+            <h2 className="text-xl font-semibold text-zinc-100 mb-3">11. Disclaimer and Limitation of Liability</h2>
             <p>
               The Platform is provided "as is" and "as available" without warranties of any kind, express
               or implied. We do not guarantee that the Platform will be uninterrupted, error-free, or secure.
             </p>
             <p className="mt-3">
-              MVRshare is not liable for any direct, indirect, incidental, or consequential damages arising
-              from your use of the Platform, including but not limited to loss of data, lost profits, or
-              damages resulting from files downloaded from the Platform. You use downloaded files at your
-              own risk and responsibility.
+              To the fullest extent permitted by applicable law, MVRshare and its operator shall not be
+              liable for any direct, indirect, incidental, special, or consequential damages arising from
+              your use of the Platform, including but not limited to loss of data, lost profits, or damages
+              resulting from files downloaded from the Platform. You use downloaded files at your own risk.
+            </p>
+            <p className="mt-3 text-zinc-400 text-sm">
+              Nothing in these Terms excludes or limits liability for fraud, gross negligence, personal
+              injury, or any other liability that cannot be excluded or limited under applicable law.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-100 mb-3">11. Termination</h2>
+            <h2 className="text-xl font-semibold text-zinc-100 mb-3">12. Termination</h2>
             <p>
               You may delete your account at any time by contacting us at{' '}
               <span className="text-amber-400">legal@mvrshare.com</span>. Upon account deletion, your
@@ -221,18 +265,22 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-100 mb-3">12. Governing Law</h2>
+            <h2 className="text-xl font-semibold text-zinc-100 mb-3">13. Governing Law and Jurisdiction</h2>
             <p>
               These Terms are governed by and construed in accordance with French law and applicable
-              European Union regulations. Any disputes arising under these Terms shall be subject to
-              the exclusive jurisdiction of the competent courts of France.
+              European Union regulations.
+            </p>
+            <p className="mt-3">
+              Nothing in these Terms limits any consumer protection rights you may be entitled to under
+              the mandatory laws of your country of residence. If you are a consumer based in the European
+              Union, you may also be entitled to bring proceedings in the courts of your country of residence.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-zinc-100 mb-3">13. Contact</h2>
+            <h2 className="text-xl font-semibold text-zinc-100 mb-3">14. Contact</h2>
             <p>
-              For any questions regarding these Terms, please contact:{' '}
+              For any questions regarding these Terms:{' '}
               <span className="text-amber-400">legal@mvrshare.com</span>
             </p>
             <p className="mt-2 text-zinc-500 text-sm">

@@ -30,14 +30,10 @@ export default function PrivacyPage() {
               <p className="text-zinc-400">
                 Email: <span className="text-amber-400">privacy@mvrshare.com</span>
               </p>
-              <p className="text-zinc-500 mt-1 text-xs">
-                Operating as an individual. MVRshare is a non-commercial, open-source community platform.
+              <p className="text-zinc-500 mt-2 text-xs">
+                MVRshare is operated independently by Benjamin Gueyte and is not incorporated as a company.
               </p>
             </div>
-            <p className="mt-3">
-              For any privacy-related enquiries or to exercise your rights, please contact us at{' '}
-              <span className="text-amber-400">privacy@mvrshare.com</span>.
-            </p>
           </section>
 
           <section>
@@ -73,15 +69,14 @@ export default function PrivacyPage() {
               <li>
                 Basic server logs collected by our hosting provider (Vercel), including IP addresses
                 and request metadata, retained for a limited period for security and operational purposes.
-                We do not use Vercel Analytics or any behavioural tracking tools.
+                We do not use Vercel Analytics or any behavioural tracking or profiling tools.
               </li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-zinc-100 mb-3">3. How We Use Your Data</h2>
-            <p>We process your personal data for the following purposes and on the following legal bases:</p>
-            <div className="mt-3 space-y-3">
+            <div className="space-y-3">
               <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
                 <p className="text-zinc-200 font-medium">Account operation</p>
                 <p className="text-sm mt-1">
@@ -94,14 +89,14 @@ export default function PrivacyPage() {
                 <p className="text-zinc-200 font-medium">Transactional communications</p>
                 <p className="text-sm mt-1">
                   To send essential account notifications (security alerts, password resets, service updates).{' '}
-                  <span className="text-amber-400">Legal basis: Legitimate interest / Contract performance (Art. 6(1)(b) and (f) GDPR).</span>
+                  <span className="text-amber-400">Legal basis: Contract performance / Legitimate interest (Art. 6(1)(b) and (f) GDPR).</span>
                 </p>
               </div>
               <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
                 <p className="text-zinc-200 font-medium">Newsletter and marketing communications</p>
                 <p className="text-sm mt-1">
-                  To send the MVRshare newsletter and community updates, only if you have explicitly opted
-                  in at registration or via your account settings.{' '}
+                  To send the MVRshare newsletter and community updates, only if you have explicitly
+                  opted in at registration or via your account settings.{' '}
                   <span className="text-amber-400">Legal basis: Consent (Art. 6(1)(a) GDPR) — freely given, specific, and withdrawable at any time.</span>
                 </p>
               </div>
@@ -129,9 +124,13 @@ export default function PrivacyPage() {
             <p>
               Content you publish on the Platform — including uploaded files, profile information, comments,
               and forum posts — is publicly accessible and may be indexed by search engines. By publishing
-              content, you acknowledge and accept this public visibility. You may remove your public content
-              at any time via your account settings or by contacting us at{' '}
-              <span className="text-amber-400">privacy@mvrshare.com</span>.
+              content, you acknowledge and accept this public visibility. The terms under which your files
+              may be reused by others are governed by the license you select at upload and by our Terms
+              and Conditions.
+            </p>
+            <p className="mt-3">
+              You may remove your public content at any time via your account settings or by contacting us
+              at <span className="text-amber-400">privacy@mvrshare.com</span>.
             </p>
           </section>
 
@@ -149,13 +148,14 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong className="text-zinc-200">Vercel</strong> — frontend hosting and deployment
-                infrastructure. Vercel may process request data (IP addresses, headers) on servers
-                globally as part of its CDN infrastructure.
+                infrastructure. Vercel may process request metadata (IP addresses, headers) on servers
+                globally as part of its CDN infrastructure, for security and performance purposes only.
               </li>
               <li>
                 <strong className="text-zinc-200">OAuth providers</strong> (GitHub, Google, Discord,
                 Facebook) — used solely for authentication at sign-in. We receive only the minimum
-                profile information necessary to create your account.
+                profile information necessary to create your account and do not share your MVRshare
+                data with these providers.
               </li>
             </ul>
           </section>
@@ -178,14 +178,14 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-zinc-100 mb-3">7. Data Retention</h2>
             <p>
               We retain your personal data for as long as your account is active. If you delete your account,
-              your personal data will be permanently removed within 30 days, except where retention is
-              required by law.
+              your personal data will be deleted from active systems within 30 days and removed from backups
+              according to our backup retention schedule, except where retention is required by applicable law.
             </p>
             <p className="mt-3">
               Uploaded files that have been publicly shared on the Platform may remain available after
-              account deletion where necessary to preserve community content integrity, on the basis of our
-              legitimate interest in maintaining a consistent shared resource. You may request the removal
-              of your files at any time by contacting us at{' '}
+              account deletion where necessary to preserve community content integrity, on the basis of
+              our legitimate interest in maintaining a consistent shared resource. You may request the
+              removal of your files at any time by contacting us at{' '}
               <span className="text-amber-400">privacy@mvrshare.com</span>.
             </p>
           </section>
@@ -206,7 +206,8 @@ export default function PrivacyPage() {
               To exercise any of these rights, contact us at{' '}
               <span className="text-amber-400">privacy@mvrshare.com</span>. We will respond within 30 days.
               You also have the right to lodge a complaint with the French data protection authority (CNIL)
-              at <span className="text-amber-400">cnil.fr</span>, or with the authority in your country of residence.
+              at <span className="text-amber-400">cnil.fr</span>, or with the supervisory authority in
+              your country of residence.
             </p>
           </section>
 
@@ -232,7 +233,7 @@ export default function PrivacyPage() {
               including encrypted data storage (Supabase), HTTPS-only connections, and row-level security
               policies on all database tables. However, no system is entirely secure and we cannot guarantee
               absolute security. In the event of a data breach affecting your rights and freedoms, we will
-              notify you and the relevant supervisory authority as required by law.
+              notify you and the relevant supervisory authority as required by applicable law.
             </p>
           </section>
 
