@@ -3,27 +3,63 @@
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 
-const ACCEPTED_FORMATS = [
-  { ext: 'mvr',  label: 'MVR',         category: 'Lighting' },
-  { ext: 'gdtf', label: 'GDTF',        category: 'Lighting' },
-  { ext: '3ds',  label: '3DS',         category: '3D' },
-  { ext: 'obj',  label: 'OBJ',         category: '3D' },
-  { ext: 'dxf',  label: 'DXF',         category: '3D' },
-  { ext: 'dwg',  label: 'DWG',         category: '3D' },
-  { ext: 'glb',  label: 'GLB',         category: '3D' },
-  { ext: 'gltf', label: 'GLTF',        category: '3D' },
-  { ext: 'exr',  label: 'EXR (HDRI)',  category: 'VFX' },
-  { ext: 'blend',label: 'Blender',     category: 'DCC' },
-  { ext: 'ma',   label: 'Maya',        category: 'DCC' },
-  { ext: 'pdf',  label: 'PDF',         category: 'Docs' },
-  { ext: 'xlsx', label: 'Excel',       category: 'Docs' },
-  { ext: 'xls',  label: 'Excel (xls)', category: 'Docs' },
+// ---- Config ----
+const FILE_FORMATS = [
+  { ext: 'mvr',  label: 'MVR',        category: '3D' },
+  { ext: 'gdtf', label: 'GDTF',       category: '3D' },
+  { ext: '3ds',  label: '3DS',        category: '3D' },
+  { ext: 'obj',  label: 'OBJ',        category: '3D' },
+  { ext: 'dxf',  label: 'DXF',        category: '3D' },
+  { ext: 'dwg',  label: 'DWG',        category: '3D' },
+  { ext: 'glb',  label: 'GLB',        category: '3D' },
+  { ext: 'gltf', label: 'GLTF',       category: '3D' },
+  { ext: 'blend',label: 'Blender',    category: '3D' },
+  { ext: 'ma',   label: 'Maya',       category: '3D' },
+  { ext: 'exr',  label: 'EXR (HDRI)', category: 'HDRI' },
+  { ext: 'pdf',  label: 'PDF',        category: 'Docs' },
+  { ext: 'xlsx', label: 'Excel',      category: 'Docs' },
+  { ext: 'xls',  label: 'Excel (xls)',category: 'Docs' },
 ]
 
 const VENUE_TYPES = [
-  'Concert / Arena', 'Festival / Outdoor', 'Theatre', 'Opera',
-  'Club / Nightclub', 'TV / Broadcast', 'Corporate / Event',
-  'Exhibition', 'Generic / Template', 'Other',
+  'Stadium',
+  'Concert / Arena',
+  'Festival / Outdoor',
+  'Theatre / Opera',
+  'Event / Corporate',
+  'Club / DJ',
+  'TV / Broadcast',
+  'Exhibition',
+  'Architectural',
+  'Generic / Template',
+  'Assets',
+]
+
+const LICENSES = [
+  {
+    id: 'cc_by',
+    label: 'CC BY',
+    badge: 'Default',
+    description: 'Others can use, share and adapt your file, even commercially, as long as they credit you.',
+    color: 'border-amber-500 bg-amber-900/20',
+    badgeColor: 'bg-amber-400 text-zinc-950',
+  },
+  {
+    id: 'cc_by_nc',
+    label: 'CC BY-NC',
+    badge: 'Non-commercial',
+    description: 'Others can use and share your file for non-commercial purposes only, with credit.',
+    color: 'border-blue-500 bg-blue-900/20',
+    badgeColor: 'bg-blue-400 text-zinc-950',
+  },
+  {
+    id: 'cc0',
+    label: 'CC0',
+    badge: 'Public Domain',
+    description: 'You waive all rights. Anyone can use your file for any purpose, no credit required.',
+    color: 'border-green-500 bg-green-900/20',
+    badgeColor: 'bg-green-400 text-zinc-950',
+  },
 ]
 
 const TYPE_COLORS: Record<string, string> = {
@@ -35,15 +71,22 @@ const TYPE_COLORS: Record<string, string> = {
   dwg:   'bg-blue-900/30 text-blue-300 border-blue-700/40',
   glb:   'bg-cyan-900/30 text-cyan-300 border-cyan-700/40',
   gltf:  'bg-cyan-900/30 text-cyan-300 border-cyan-700/40',
-  exr:   'bg-orange-900/30 text-orange-300 border-orange-700/40',
   blend: 'bg-green-900/30 text-green-300 border-green-700/40',
   ma:    'bg-green-900/30 text-green-300 border-green-700/40',
+  exr:   'bg-orange-900/30 text-orange-300 border-orange-700/40',
   pdf:   'bg-red-900/30 text-red-300 border-red-700/40',
   xlsx:  'bg-emerald-900/30 text-emerald-300 border-emerald-700/40',
   xls:   'bg-emerald-900/30 text-emerald-300 border-emerald-700/40',
+  jpg:   'bg-pink-900/30 text-pink-300 border-pink-700/40',
+  jpeg:  'bg-pink-900/30 text-pink-300 border-pink-700/40',
+  png:   'bg-pink-900/30 text-pink-300 border-pink-700/40',
+  webp:  'bg-pink-900/30 text-pink-300 border-pink-700/40',
+  mp4:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
+  mov:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
 }
 
 function formatSize(bytes: number) {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`
   return `${bytes} B`
@@ -53,20 +96,56 @@ function getFileExt(filename: string) {
   return filename.split('.').pop()?.toLowerCase() ?? 'other'
 }
 
+function isImageFile(ext: string) {
+  return ['jpg', 'jpeg', 'png', 'webp'].includes(ext)
+}
+
+function isVideoFile(ext: string) {
+  return ['mp4', 'mov'].includes(ext)
+}
+
+function isMediaFile(ext: string) {
+  return isImageFile(ext) || isVideoFile(ext)
+}
+
+function isProjectFile(ext: string) {
+  return FILE_FORMATS.some(f => f.ext === ext)
+}
+
+type UploadedFile = {
+  file: File
+  ext: string
+  id: string
+}
+
 export default function UploadPage() {
   const [profile, setProfile] = useState<{ id: string; username: string } | null>(null)
   const [notAuth, setNotAuth] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [file, setFile] = useState<File | null>(null)
-  const [dragOver, setDragOver] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Fichiers projet (MVR, PDF, etc.)
+  const [projectFiles, setProjectFiles] = useState<UploadedFile[]>([])
+  // Médias (photos + vidéos)
+  const [mediaFiles, setMediaFiles] = useState<UploadedFile[]>([])
+
+  const [dragOverProject, setDragOverProject] = useState(false)
+  const [dragOverMedia, setDragOverMedia] = useState(false)
+  const projectInputRef = useRef<HTMLInputElement>(null)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
+
+  // Formulaire
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [venueType, setVenueType] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [license, setLicense] = useState('cc_by')
+  const [acceptedRights, setAcceptedRights] = useState(false)
+
+  // Upload
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [progressLabel, setProgressLabel] = useState('')
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [done, setDone] = useState(false)
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null)
@@ -84,27 +163,37 @@ export default function UploadPage() {
     checkAuth()
   }, [])
 
-  function handleFileSelect(selected: File) {
-    const ext = getFileExt(selected.name)
-    const accepted = ACCEPTED_FORMATS.find(f => f.ext === ext)
-    if (!accepted) {
-      setMessage({ type: 'error', text: `Format .${ext} is not supported. Please check the accepted formats below.` })
-      return
+  function addProjectFiles(newFiles: FileList | null) {
+    if (!newFiles) return
+    const valid: UploadedFile[] = []
+    Array.from(newFiles).forEach(f => {
+      const ext = getFileExt(f.name)
+      if (!isProjectFile(ext)) {
+        setMessage({ type: 'error', text: `Format .${ext} is not supported as a project file.` })
+        return
+      }
+      valid.push({ file: f, ext, id: Math.random().toString(36).slice(2) })
+    })
+    setProjectFiles(prev => [...prev, ...valid])
+    if (valid.length > 0 && !title) {
+      setTitle(valid[0].file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '))
     }
-    if (selected.size > 500 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'File is too large. Maximum size is 500 MB.' })
-      return
-    }
-    setFile(selected)
     setMessage(null)
-    if (!title) setTitle(selected.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '))
   }
 
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setDragOver(false)
-    const dropped = e.dataTransfer.files[0]
-    if (dropped) handleFileSelect(dropped)
+  function addMediaFiles(newFiles: FileList | null) {
+    if (!newFiles) return
+    const valid: UploadedFile[] = []
+    Array.from(newFiles).forEach(f => {
+      const ext = getFileExt(f.name)
+      if (!isMediaFile(ext)) {
+        setMessage({ type: 'error', text: `Format .${ext} is not supported as a media file.` })
+        return
+      }
+      valid.push({ file: f, ext, id: Math.random().toString(36).slice(2) })
+    })
+    setMediaFiles(prev => [...prev, ...valid])
+    setMessage(null)
   }
 
   function handleTagKeyDown(e: React.KeyboardEvent) {
@@ -119,26 +208,55 @@ export default function UploadPage() {
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault()
-    if (!file || !profile) return
+    if (!profile) return
+    if (projectFiles.length === 0) { setMessage({ type: 'error', text: 'Please add at least one project file.' }); return }
     if (!title.trim()) { setMessage({ type: 'error', text: 'Please add a title.' }); return }
+    if (!acceptedRights) { setMessage({ type: 'error', text: 'Please confirm you hold the rights to publish this content.' }); return }
 
     setUploading(true)
-    setProgress(10)
     setMessage(null)
 
-    const ext = getFileExt(file.name)
-    const storagePath = `${profile.id}/${Date.now()}_${file.name}`
+    const primaryExt = projectFiles[0].ext
+    const totalFiles = projectFiles.length + mediaFiles.length
+    let uploaded = 0
 
-    setProgress(30)
-    const { error: uploadError } = await supabase.storage.from('mvr-files').upload(storagePath, file, { upsert: false })
+    const storedProjectPaths: string[] = []
+    const storedMediaUrls: string[] = []
 
-    if (uploadError) {
-      setMessage({ type: 'error', text: 'Upload failed: ' + uploadError.message })
-      setUploading(false); setProgress(0); return
+    // Upload fichiers projet
+    for (const pf of projectFiles) {
+      setProgressLabel(`Uploading ${pf.file.name}...`)
+      setProgress(Math.round((uploaded / totalFiles) * 80))
+      const path = `${profile.id}/${Date.now()}_${pf.file.name}`
+      const { error } = await supabase.storage.from('mvr-files').upload(path, pf.file, { upsert: false })
+      if (error) {
+        setMessage({ type: 'error', text: `Failed to upload ${pf.file.name}: ${error.message}` })
+        setUploading(false); setProgress(0); return
+      }
+      storedProjectPaths.push(path)
+      uploaded++
     }
 
-    setProgress(70)
-    const { data: urlData } = supabase.storage.from('mvr-files').getPublicUrl(storagePath)
+    // Upload médias
+    for (const mf of mediaFiles) {
+      setProgressLabel(`Uploading ${mf.file.name}...`)
+      setProgress(Math.round((uploaded / totalFiles) * 80))
+      const path = `${profile.id}/media/${Date.now()}_${mf.file.name}`
+      const { error } = await supabase.storage.from('mvr-files').upload(path, mf.file, { upsert: false })
+      if (error) {
+        setMessage({ type: 'error', text: `Failed to upload ${mf.file.name}: ${error.message}` })
+        setUploading(false); setProgress(0); return
+      }
+      const { data: urlData } = supabase.storage.from('mvr-files').getPublicUrl(path)
+      storedMediaUrls.push(urlData.publicUrl)
+      uploaded++
+    }
+
+    setProgress(85)
+    setProgressLabel('Saving to database...')
+
+    // URL publique du fichier principal
+    const { data: urlData } = supabase.storage.from('mvr-files').getPublicUrl(storedProjectPaths[0])
 
     const { data: fileData, error: dbError } = await supabase
       .from('files')
@@ -146,14 +264,14 @@ export default function UploadPage() {
         author_id: profile.id,
         title: title.trim(),
         description: description.trim() || null,
-        file_type: ext,
-        file_name: file.name,
-        file_size: file.size,
-        storage_path: storagePath,
+        file_type: primaryExt,
+        file_name: projectFiles[0].file.name,
+        file_size: projectFiles.reduce((sum, f) => sum + f.file.size, 0),
+        storage_path: storedProjectPaths[0],
         download_url: urlData.publicUrl,
         venue_type: venueType || null,
         tags: tags.length > 0 ? tags : null,
-        license: 'cc_by',
+        license: license as any,
         is_public: true,
         is_latest: true,
         version: '1.0',
@@ -173,8 +291,14 @@ export default function UploadPage() {
     setUploading(false)
   }
 
-  const fileExt = file ? getFileExt(file.name) : null
-  const fileColor = fileExt ? (TYPE_COLORS[fileExt] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700') : ''
+  function resetForm() {
+    setDone(false); setProjectFiles([]); setMediaFiles([])
+    setTitle(''); setDescription(''); setVenueType('')
+    setTags([]); setLicense('cc_by'); setAcceptedRights(false)
+    setProgress(0); setUploadedFileId(null)
+  }
+
+  const hasFiles = projectFiles.length > 0
 
   if (loading) return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
@@ -192,13 +316,13 @@ export default function UploadPage() {
   if (done) return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-6 px-6">
       <div className="text-center">
-        <div className="w-16 h-16 bg-green-900/30 border border-green-700/40 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">✓</div>
-        <h2 className="text-2xl font-semibold text-zinc-100 mb-2">File uploaded successfully!</h2>
-        <p className="text-zinc-400 text-sm">Your file is now available in the gallery.</p>
+        <div className="w-16 h-16 bg-green-900/30 border border-green-700/40 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
+        <h2 className="text-2xl font-semibold text-zinc-100 mb-2">Project uploaded successfully!</h2>
+        <p className="text-zinc-400 text-sm">Your project is now available in the gallery.</p>
       </div>
       <div className="flex gap-3 flex-wrap justify-center">
-        <a href={`/files/${uploadedFileId}`} className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors text-sm">View file page</a>
-        <button onClick={() => { setDone(false); setFile(null); setTitle(''); setDescription(''); setVenueType(''); setTags([]); setProgress(0) }} className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 transition-colors text-sm">Upload another</button>
+        <a href={`/files/${uploadedFileId}`} className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors text-sm">View project page</a>
+        <button onClick={resetForm} className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 transition-colors text-sm">Upload another</button>
         <a href="/" className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 transition-colors text-sm">Back to gallery</a>
       </div>
     </div>
@@ -216,79 +340,119 @@ export default function UploadPage() {
       <div className="max-w-2xl mx-auto px-6 py-10">
         <div className="mb-8">
           <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// upload</p>
-          <h1 className="text-2xl font-medium">Share a file</h1>
-          <p className="text-zinc-500 text-sm mt-1">Share your MVR scenes, GDTF patches, 3D files, lighting plans, or patch sheets with the community.</p>
+          <h1 className="text-2xl font-medium">Share a project</h1>
+          <p className="text-zinc-500 text-sm mt-1">Upload your files, add photos or videos, and share your work with the lighting design community.</p>
         </div>
 
         <form onSubmit={handleUpload} className="flex flex-col gap-6">
 
-          {/* Drop zone */}
-          <div
-            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => !file && fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-              dragOver ? 'border-amber-500 bg-amber-900/10' :
-              file ? 'border-zinc-700 bg-zinc-900 cursor-default' :
-              'border-zinc-700 hover:border-zinc-500 bg-zinc-900 cursor-pointer'
-            }`}
-          >
-            {file ? (
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xs font-bold font-mono border flex-shrink-0 ${fileColor}`}>
-                  {fileExt?.toUpperCase().slice(0, 4)}
-                </div>
-                <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-medium text-zinc-100 truncate">{file.name}</p>
-                  <p className="text-xs text-zinc-500 font-mono mt-0.5">{formatSize(file.size)}</p>
-                </div>
-                <button type="button" onClick={e => { e.stopPropagation(); setFile(null); setTitle('') }} className="text-zinc-500 hover:text-red-400 transition-colors text-lg flex-shrink-0">✕</button>
-              </div>
-            ) : (
-              <div>
-                <div className="text-3xl mb-3">📁</div>
-                <p className="text-zinc-300 font-medium mb-1">Drop your file here</p>
-                <p className="text-zinc-500 text-sm">or click to browse · Max 500 MB</p>
+          {/* ---- FICHIERS PROJET ---- */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+            <h2 className="text-sm font-medium text-zinc-300 mb-1">Project files <span className="text-red-400">*</span></h2>
+            <p className="text-xs text-zinc-500 mb-4">Add one or more files — MVR, GDTF, PDF, Excel, 3D...</p>
+
+            {/* Zone drop */}
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOverProject(true) }}
+              onDragLeave={() => setDragOverProject(false)}
+              onDrop={e => { e.preventDefault(); setDragOverProject(false); addProjectFiles(e.dataTransfer.files) }}
+              onClick={() => projectInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors mb-3 ${dragOverProject ? 'border-amber-500 bg-amber-900/10' : 'border-zinc-700 hover:border-zinc-500'}`}
+            >
+              <p className="text-zinc-400 text-sm">Drop files here or <span className="text-amber-400">browse</span></p>
+              <p className="text-zinc-600 text-xs mt-1">No size limit · Multiple files supported</p>
+              <input ref={projectInputRef} type="file" multiple onChange={e => addProjectFiles(e.target.files)} className="hidden"
+                accept=".mvr,.gdtf,.3ds,.obj,.dxf,.dwg,.glb,.gltf,.blend,.ma,.exr,.pdf,.xlsx,.xls" />
+            </div>
+
+            {/* Liste des fichiers */}
+            {projectFiles.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {projectFiles.map(pf => (
+                  <div key={pf.id} className="flex items-center gap-3 bg-zinc-800 rounded-lg px-3 py-2.5">
+                    <div className={`w-9 h-9 rounded-md flex items-center justify-center text-xs font-bold font-mono border flex-shrink-0 ${TYPE_COLORS[pf.ext] ?? 'bg-zinc-700 text-zinc-300 border-zinc-600'}`}>
+                      {pf.ext.toUpperCase().slice(0, 4)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-zinc-100 truncate">{pf.file.name}</p>
+                      <p className="text-xs text-zinc-500 font-mono">{formatSize(pf.file.size)}</p>
+                    </div>
+                    <button type="button" onClick={() => setProjectFiles(prev => prev.filter(f => f.id !== pf.id))} className="text-zinc-500 hover:text-red-400 transition-colors text-base flex-shrink-0">✕</button>
+                  </div>
+                ))}
               </div>
             )}
-            <input ref={fileInputRef} type="file" onChange={e => { if (e.target.files?.[0]) handleFileSelect(e.target.files[0]) }} className="hidden" accept=".mvr,.gdtf,.3ds,.obj,.dxf,.dwg,.glb,.gltf,.exr,.blend,.ma,.pdf,.xlsx,.xls" />
-          </div>
 
-          {/* Formats */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-            <p className="text-xs font-mono text-zinc-500 mb-3 uppercase tracking-wider">Accepted formats</p>
-            {['Lighting', '3D', 'VFX', 'DCC', 'Docs'].map(cat => (
-              <div key={cat} className="mb-2 flex items-start gap-2">
-                <span className="text-xs text-zinc-600 w-16 flex-shrink-0 font-mono pt-0.5">{cat}</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {ACCEPTED_FORMATS.filter(f => f.category === cat).map(f => (
-                    <span key={f.ext} className={`text-xs px-2 py-0.5 rounded font-mono border ${TYPE_COLORS[f.ext] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>.{f.ext}</span>
-                  ))}
+            {/* Formats acceptés */}
+            <div className="mt-4 pt-4 border-t border-zinc-800">
+              <p className="text-xs font-mono text-zinc-600 mb-2 uppercase tracking-wider">Accepted formats</p>
+              {['3D', 'HDRI', 'Docs'].map(cat => (
+                <div key={cat} className="mb-1.5 flex items-start gap-2">
+                  <span className="text-xs text-zinc-600 w-10 flex-shrink-0 font-mono pt-0.5">{cat}</span>
+                  <div className="flex flex-wrap gap-1">
+                    {FILE_FORMATS.filter(f => f.category === cat).map(f => (
+                      <span key={f.ext} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${TYPE_COLORS[f.ext] ?? 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>.{f.ext}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* Métadonnées */}
-          {file && (
+          {/* ---- MÉDIAS ---- */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+            <h2 className="text-sm font-medium text-zinc-300 mb-1">Photos & videos <span className="text-zinc-600">(optional)</span></h2>
+            <p className="text-xs text-zinc-500 mb-4">Add photos or a video of your show or project. Accepted: JPG, PNG, WEBP, MP4, MOV.</p>
+
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOverMedia(true) }}
+              onDragLeave={() => setDragOverMedia(false)}
+              onDrop={e => { e.preventDefault(); setDragOverMedia(false); addMediaFiles(e.dataTransfer.files) }}
+              onClick={() => mediaInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors mb-3 ${dragOverMedia ? 'border-amber-500 bg-amber-900/10' : 'border-zinc-700 hover:border-zinc-500'}`}
+            >
+              <p className="text-zinc-400 text-sm">Drop photos or videos here or <span className="text-amber-400">browse</span></p>
+              <input ref={mediaInputRef} type="file" multiple accept=".jpg,.jpeg,.png,.webp,.mp4,.mov" onChange={e => addMediaFiles(e.target.files)} className="hidden" />
+            </div>
+
+            {mediaFiles.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {mediaFiles.map(mf => (
+                  <div key={mf.id} className="relative group">
+                    {isImageFile(mf.ext) ? (
+                      <img src={URL.createObjectURL(mf.file)} alt={mf.file.name} className="w-full h-24 object-cover rounded-lg border border-zinc-700" />
+                    ) : (
+                      <div className={`w-full h-24 rounded-lg border flex items-center justify-center ${TYPE_COLORS[mf.ext] ?? 'bg-zinc-800 border-zinc-700'}`}>
+                        <span className="text-xs font-mono font-bold">.{mf.ext}</span>
+                      </div>
+                    )}
+                    <button type="button" onClick={() => setMediaFiles(prev => prev.filter(f => f.id !== mf.id))} className="absolute top-1 right-1 w-5 h-5 bg-zinc-900/80 rounded-full text-zinc-400 hover:text-red-400 transition-colors text-xs flex items-center justify-center opacity-0 group-hover:opacity-100">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ---- MÉTADONNÉES (si au moins un fichier) ---- */}
+          {hasFiles && (
             <>
+              {/* Titre + description */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
-                <h2 className="text-sm font-medium text-zinc-300">File details</h2>
+                <h2 className="text-sm font-medium text-zinc-300">Project details</h2>
                 <div>
                   <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Title <span className="text-red-400">*</span></label>
                   <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Coldplay Stadium — Full MVR Scene" maxLength={200} required className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors" />
                 </div>
                 <div>
                   <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Description</label>
-                  <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the file — software used, fixture count, show context, known limitations..." maxLength={2000} rows={4} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors resize-none" />
+                  <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Software used, fixture count, show context, known limitations..." maxLength={2000} rows={4} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors resize-none" />
                   <p className="text-xs text-zinc-600 mt-1 text-right">{description.length}/2000</p>
                 </div>
               </div>
 
+              {/* Venue type */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h2 className="text-sm font-medium text-zinc-300 mb-1">Venue type</h2>
-                <p className="text-xs text-zinc-500 mb-4">What kind of venue or show is this file for?</p>
+                <h2 className="text-sm font-medium text-zinc-300 mb-4">Stage / Venue type</h2>
                 <div className="flex flex-wrap gap-2">
                   {VENUE_TYPES.map(v => (
                     <button key={v} type="button" onClick={() => setVenueType(venueType === v ? '' : v)} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${venueType === v ? 'bg-amber-400 text-zinc-950 border-amber-400' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-200'}`}>{v}</button>
@@ -296,6 +460,7 @@ export default function UploadPage() {
                 </div>
               </div>
 
+              {/* Tags */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
                 <h2 className="text-sm font-medium text-zinc-300 mb-1">Tags</h2>
                 <p className="text-xs text-zinc-500 mb-3">Press Enter or comma to add · Max 10 tags</p>
@@ -312,10 +477,31 @@ export default function UploadPage() {
                 </div>
               </div>
 
+              {/* License */}
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+                <h2 className="text-sm font-medium text-zinc-300 mb-1">License</h2>
+                <p className="text-xs text-zinc-500 mb-4">Choose how others can use your file.</p>
+                <div className="flex flex-col gap-3">
+                  {LICENSES.map(l => (
+                    <label key={l.id} className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-colors ${license === l.id ? l.color : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'}`}>
+                      <input type="radio" name="license" value={l.id} checked={license === l.id} onChange={() => setLicense(l.id)} className="mt-0.5 flex-shrink-0 accent-amber-400" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-zinc-100 font-mono">{l.label}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded font-mono ${l.badgeColor}`}>{l.badge}</span>
+                        </div>
+                        <p className="text-xs text-zinc-400 leading-relaxed">{l.description}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Progress */}
               {uploading && (
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-zinc-300">Uploading...</span>
+                    <span className="text-sm text-zinc-300">{progressLabel}</span>
                     <span className="text-xs font-mono text-zinc-500">{progress}%</span>
                   </div>
                   <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -330,16 +516,33 @@ export default function UploadPage() {
                 </div>
               )}
 
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                By uploading, you confirm that you hold the necessary rights to share this file and that it complies with our{' '}
-                <a href="/terms" target="_blank" className="text-zinc-500 hover:text-amber-400 transition-colors">Terms and Conditions</a>.
-                All third-party trademarks remain the property of their respective owners.
-              </p>
+              {/* Case à cocher droits */}
+              <label className="flex items-start gap-3 cursor-pointer p-4 bg-zinc-900 border border-zinc-800 rounded-xl">
+                <input
+                  type="checkbox"
+                  checked={acceptedRights}
+                  onChange={e => setAcceptedRights(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-zinc-600 bg-zinc-700 text-amber-400 focus:ring-amber-500 flex-shrink-0 cursor-pointer"
+                />
+                <span className="text-xs text-zinc-400 leading-relaxed">
+                  I confirm that I hold all necessary rights to publish this content and that it complies with
+                  the MVRshare{' '}
+                  <a href="/terms" target="_blank" className="text-amber-400 hover:underline">Terms and Conditions</a>.
+                  I understand that uploading content I do not own the rights to may result in account suspension.
+                  All third-party trademarks and manufacturer names remain the property of their respective owners.
+                  <span className="text-red-400"> *</span>
+                </span>
+              </label>
 
+              {/* Submit */}
               <div className="flex items-center justify-between">
                 <a href="/" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">Cancel</a>
-                <button type="submit" disabled={uploading || !title.trim()} className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors disabled:opacity-50 text-sm">
-                  {uploading ? 'Uploading...' : 'Publish file'}
+                <button
+                  type="submit"
+                  disabled={uploading || !title.trim() || !acceptedRights}
+                  className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors disabled:opacity-50 text-sm"
+                >
+                  {uploading ? 'Uploading...' : 'Publish project'}
                 </button>
               </div>
             </>
