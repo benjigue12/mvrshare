@@ -31,6 +31,7 @@ const VENUE_TYPES = [
   'TV / Broadcast',
   'Exhibition',
   'Architectural',
+  'House of Worship',
   'Generic / Template',
   'Assets',
 ]
@@ -399,9 +400,26 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {/* ---- MÉDIAS ---- */}
+          {/* ---- MÉTADONNÉES (si au moins un fichier) ---- */}
+          {hasFiles && (
+            <>
+              {/* Titre + description */}
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
+                <h2 className="text-sm font-medium text-zinc-300">Project details</h2>
+                <div>
+                  <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Title <span className="text-red-400">*</span></label>
+                  <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Coldplay Stadium — Full MVR Scene" maxLength={200} required className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors" />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Description</label>
+                  <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Software used, fixture count, show context, known limitations..." maxLength={2000} rows={4} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors resize-none" />
+                  <p className="text-xs text-zinc-600 mt-1 text-right">{description.length}/2000</p>
+                </div>
+              </div>
+
+              {/* ---- MÉDIAS ---- */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-medium text-zinc-300 mb-1">Photos & videos <span className="text-zinc-600">(optional)</span></h2>
+            <h2 className="text-sm font-medium text-zinc-300 mb-1">Medias <span className="text-zinc-600"> </span></h2>
             <p className="text-xs text-zinc-500 mb-4">Add photos or a video of your show or project. Accepted: JPG, PNG, WEBP, MP4, MOV.</p>
 
             <div
@@ -432,23 +450,6 @@ export default function UploadPage() {
               </div>
             )}
           </div>
-
-          {/* ---- MÉTADONNÉES (si au moins un fichier) ---- */}
-          {hasFiles && (
-            <>
-              {/* Titre + description */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
-                <h2 className="text-sm font-medium text-zinc-300">Project details</h2>
-                <div>
-                  <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Title <span className="text-red-400">*</span></label>
-                  <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Coldplay Stadium — Full MVR Scene" maxLength={200} required className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors" />
-                </div>
-                <div>
-                  <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Description</label>
-                  <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Software used, fixture count, show context, known limitations..." maxLength={2000} rows={4} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors resize-none" />
-                  <p className="text-xs text-zinc-600 mt-1 text-right">{description.length}/2000</p>
-                </div>
-              </div>
 
               {/* Venue type */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
