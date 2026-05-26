@@ -40,7 +40,7 @@ const LICENSES = [
   {
     id: 'cc_by',
     label: 'CC BY',
-    badge: 'Default',
+    badge: 'Recommanded',
     description: 'Others can use, share and adapt your file, even commercially, as long as they credit you.',
     color: 'border-amber-500 bg-amber-900/20',
     badgeColor: 'bg-amber-400 text-zinc-950',
@@ -358,13 +358,12 @@ export default function UploadPage() {
               onDragLeave={() => setDragOverProject(false)}
               onDrop={e => { e.preventDefault(); setDragOverProject(false); addProjectFiles(e.dataTransfer.files) }}
               onClick={() => projectInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors mb-3 ${dragOverProject ? 'border-amber-500 bg-amber-900/10' : 'border-zinc-700 hover:border-zinc-500'}`}
+            className={`border-2 border-dashed rounded-xl py-14 px-8 text-center cursor-pointer transition-colors mb-3 ${dragOverProject ? 'border-amber-500 bg-amber-900/10' : 'border-zinc-700 hover:border-zinc-500'}`}
             >
-              <p className="text-zinc-400 text-sm">Drop files here or <span className="text-amber-400">browse</span></p>
-              <p className="text-zinc-600 text-xs mt-1">No size limit · Multiple files supported</p>
-              <input ref={projectInputRef} type="file" multiple onChange={e => addProjectFiles(e.target.files)} className="hidden"
-                accept=".mvr,.gdtf,.3ds,.obj,.dxf,.dwg,.glb,.gltf,.blend,.ma,.exr,.pdf,.xlsx,.xls" />
-            </div>
+              <div className="text-4xl mb-4">📁</div>
+              <p className="text-zinc-200 font-medium mb-1">Drop your files here</p>
+              <p className="text-zinc-400 text-sm mb-3">or <span className="text-amber-400 hover:underline">browse your computer</span></p>
+              <p className="text-zinc-600 text-xs">MVR · GDTF · 3DS · OBJ · DWG · PDF · Excel · and more · No size limit</p>
 
             {/* Liste des fichiers */}
             {projectFiles.length > 0 && (
