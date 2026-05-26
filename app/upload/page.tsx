@@ -364,6 +364,9 @@ export default function UploadPage() {
               <p className="text-zinc-200 font-medium mb-1">Drop your files here</p>
               <p className="text-zinc-400 text-sm mb-3">or <span className="text-amber-400 hover:underline">browse your computer</span></p>
               <p className="text-zinc-600 text-xs">MVR · GDTF · 3DS · OBJ · DWG · PDF · Excel · and more · No size limit</p>
+              <input ref={projectInputRef} type="file" multiple onChange={e => addProjectFiles(e.target.files)} className="hidden"
+                accept=".mvr,.gdtf,.3ds,.obj,.dxf,.dwg,.glb,.gltf,.blend,.ma,.exr,.pdf,.xlsx,.xls" />
+            </div>
 
             {/* Liste des fichiers */}
             {projectFiles.length > 0 && (
