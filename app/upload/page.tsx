@@ -391,7 +391,7 @@ export default function UploadPage() {
             {/* Formats acceptés */}
             <div className="mt-4 pt-4 border-t border-zinc-800">
               <p className="text-xs font-mono text-zinc-600 mb-2 uppercase tracking-wider">Accepted formats</p>
-              {['3D', 'Fixtures', 'HDRI', 'Docs'].map(cat => (
+              {['3D', 'Fixture', 'HDRI', 'Doc'].map(cat => (
                 <div key={cat} className="mb-1.5 flex items-start gap-2">
                   <span className="text-xs text-zinc-600 w-10 flex-shrink-0 font-mono pt-0.5">{cat}</span>
                   <div className="flex flex-wrap gap-1">
