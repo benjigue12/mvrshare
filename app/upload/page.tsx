@@ -469,7 +469,7 @@ export default function UploadPage() {
               {/* Tags */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
                 <h2 className="text-sm font-medium text-zinc-300 mb-1">Tags</h2>
-                <p className="text-xs text-zinc-500 mb-3">Press Enter or comma to add · Max 10 tags</p>
+                <p className="text-xs text-zinc-500 mb-3">Press Enter to add</p>
                 <div className="flex flex-wrap gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 min-h-[44px] focus-within:border-amber-500 transition-colors">
                   {tags.map(tag => (
                     <span key={tag} className="flex items-center gap-1 bg-zinc-700 text-zinc-200 text-xs px-2 py-1 rounded font-mono">
@@ -486,11 +486,11 @@ export default function UploadPage() {
               {/* License */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
                 <h2 className="text-sm font-medium text-zinc-300 mb-1">License</h2>
-                <p className="text-xs text-zinc-500 mb-4">Choose how others can use your file.</p>
+                <p className="text-xs text-zinc-500 mb-4">Choose how others can use your files.</p>
                 <div className="flex flex-col gap-3">
                   {LICENSES.map(l => (
                     <label key={l.id} className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-colors ${license === l.id ? l.color : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'}`}>
-                      <input type="radio" name="license" value={l.id} checked={license === l.id} onChange={() => setLicense(l.id)} className="mt-0.5 flex-shrink-0 accent-amber-400" />
+                      <input type="radio" name="license Creative Commons" value={l.id} checked={license === l.id} onChange={() => setLicense(l.id)} className="mt-0.5 flex-shrink-0 accent-amber-400" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-medium text-zinc-100 font-mono">{l.label}</span>
