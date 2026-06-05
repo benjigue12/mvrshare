@@ -345,7 +345,7 @@ export default function UploadPage() {
         <div className="mb-8">
           <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// upload</p>
           <h1 className="text-2xl font-medium">Share a project</h1>
-          <p className="text-zinc-500 text-sm mt-1">Upload your files, add photos or videos, and share your work with the lighting design community.</p>
+          <p className="text-zinc-500 text-sm mt-1">Upload your files and share your work with the community.</p>
         </div>
 
         <form onSubmit={handleUpload} className="flex flex-col gap-6">
@@ -353,7 +353,7 @@ export default function UploadPage() {
           {/* ---- FICHIERS PROJET ---- */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
             <h2 className="text-sm font-medium text-zinc-300 mb-1">Project files <span className="text-red-400">*</span></h2>
-            <p className="text-xs text-zinc-500 mb-4">Add one or more files — MVR, GDTF, PDF, Excel, 3D...</p>
+            <p className="text-xs text-zinc-500 mb-4">Add one or more files </p>
 
             {/* Zone drop */}
             <div
@@ -393,7 +393,7 @@ export default function UploadPage() {
               <p className="text-xs font-mono text-zinc-600 mb-2 uppercase tracking-wider">Accepted formats</p>
               {['3D', 'Fixture', 'HDRI', 'Doc'].map(cat => (
                 <div key={cat} className="mb-1.5 flex items-start gap-2">
-                  <span className="text-xs text-zinc-600 w-10 flex-shrink-0 font-mono pt-0.5">{cat}</span>
+                  <span className="text-xs text-zinc-600 w-16 flex-shrink-0 font-mono pt-0.5">{cat}</span>
                   <div className="flex flex-wrap gap-1">
                     {FILE_FORMATS.filter(f => f.category === cat).map(f => (
                       <span key={f.ext} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${TYPE_COLORS[f.ext] ?? 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>.{f.ext}</span>
