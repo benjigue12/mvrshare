@@ -215,6 +215,7 @@ export default function UploadPage() {
     if (!profile) return
     if (projectFiles.length === 0) { setMessage({ type: 'error', text: 'Please add at least one project file.' }); return }
     if (!title.trim()) { setMessage({ type: 'error', text: 'Please add a title.' }); return }
+    if (!venueType) { setMessage({ type: 'error', text: 'Please select a venue type.' }); return }
     if (!acceptedRights) { setMessage({ type: 'error', text: 'Please confirm you hold the rights to publish this content.' }); return }
 
     setUploading(true)
@@ -457,7 +458,7 @@ export default function UploadPage() {
 
               {/* Venue type */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h2 className="text-sm font-medium text-zinc-300 mb-4">Stage / Venue type</h2>
+                <h2 className="text-sm font-medium text-zinc-300 mb-4">Stage / Venue type <span className="text-red-400">*</span></h2>
                 <div className="flex flex-wrap gap-2">
                   {VENUE_TYPES.map(v => (
                     <button key={v} type="button" onClick={() => setVenueType(venueType === v ? '' : v)} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${venueType === v ? 'bg-amber-400 text-zinc-950 border-amber-400' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-200'}`}>{v}</button>
