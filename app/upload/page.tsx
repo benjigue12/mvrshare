@@ -66,16 +66,16 @@ const LICENSES = [
 
 const TYPE_COLORS: Record<string, string> = {
   mvr:   'bg-amber-900/30 text-amber-300 border-amber-700/40',
-  gdtf:  'bg-purple-900/30 text-purple-300 border-purple-700/40',
-  '3ds': 'bg-blue-900/30 text-blue-300 border-blue-700/40',
-  obj:   'bg-blue-900/30 text-blue-300 border-blue-700/40',
-  dxf:   'bg-blue-900/30 text-blue-300 border-blue-700/40',
-  dwg:   'bg-blue-900/30 text-blue-300 border-blue-700/40',
+  fbx:   'bg-rose-900/30 text-rose-300 border-rose-700/40',
+  skp:   'bg-teal-900/30 text-teal-300 border-teal-700/40',
   glb:   'bg-cyan-900/30 text-cyan-300 border-cyan-700/40',
   gltf:  'bg-cyan-900/30 text-cyan-300 border-cyan-700/40',
-  blend: 'bg-green-900/30 text-green-300 border-green-700/40',
-  ma:    'bg-green-900/30 text-green-300 border-green-700/40',
-  exr:   'bg-orange-900/30 text-orange-300 border-orange-700/40',
+  obj:   'bg-blue-900/30 text-blue-300 border-blue-700/40',
+  dwg:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
+  dxf:   'bg-indigo-900/30 text-indigo-300 border-indigo-700/40',
+  '3ds': 'bg-orange-900/30 text-orange-300 border-orange-700/40',
+  gdtf:  'bg-purple-900/30 text-purple-300 border-purple-700/40',
+  exr:   'bg-yellow-900/30 text-yellow-300 border-yellow-700/40',
   pdf:   'bg-red-900/30 text-red-300 border-red-700/40',
   xlsx:  'bg-emerald-900/30 text-emerald-300 border-emerald-700/40',
   xls:   'bg-emerald-900/30 text-emerald-300 border-emerald-700/40',
@@ -85,8 +85,8 @@ const TYPE_COLORS: Record<string, string> = {
   webp:  'bg-pink-900/30 text-pink-300 border-pink-700/40',
   mp4:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
   mov:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
-  skp: 'bg-blue-900/30 text-blue-300 border-blue-700/40',
-  fbx: 'bg-blue-900/30 text-blue-300 border-blue-700/40',
+  blend: 'bg-green-900/30 text-green-300 border-green-700/40',
+  ma:    'bg-lime-900/30 text-lime-300 border-lime-700/40',
 }
 
 function formatSize(bytes: number) {
