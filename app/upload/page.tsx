@@ -5,21 +5,22 @@ import { createClient } from '@/lib/supabase'
 
 // ---- Config ----
 const FILE_FORMATS = [
-  { ext: 'mvr',  label: 'MVR',        category: '3D' },
-  { ext: 'gdtf', label: 'GDTF',       category: '3D' },
-  { ext: '3ds',  label: '3DS',        category: '3D' },
-  { ext: 'obj',  label: 'OBJ',        category: '3D' },
-  { ext: 'dxf',  label: 'DXF',        category: '3D' },
-  { ext: 'dwg',  label: 'DWG',        category: '3D' },
-  { ext: 'glb',  label: 'GLB',        category: '3D' },
-  { ext: 'gltf', label: 'GLTF',       category: '3D' },
-  { ext: 'blend',label: 'Blender',    category: '3D' },
-  { ext: 'ma',   label: 'Maya',       category: '3D' },
-  { ext: 'exr',  label: 'EXR (HDRI)', category: 'HDRI' },
-  { ext: 'pdf',  label: 'PDF',        category: 'Docs' },
-  { ext: 'xlsx', label: 'Excel',      category: 'Docs' },
-  { ext: 'xls',  label: 'Excel (xls)',category: 'Docs' },
+  { ext: 'mvr',  label: 'MVR',  category: '3D' },
+  { ext: 'fbx',  label: 'FBX',  category: '3D' },
+  { ext: 'skp',  label: 'SKP',  category: '3D' },
+  { ext: 'glb',  label: 'GLB',  category: '3D' },
+  { ext: 'gltf', label: 'GLTF', category: '3D' },
+  { ext: 'obj',  label: 'OBJ',  category: '3D' },
+  { ext: 'dwg',  label: 'DWG',  category: '3D' },
+  { ext: 'dxf',  label: 'DXF',  category: '3D' },
+  { ext: '3ds',  label: '3DS',  category: '3D' },
+  { ext: 'gdtf', label: 'GDTF', category: 'Fixture' },
+  { ext: 'exr',  label: 'EXR',  category: 'HDRI' },
+  { ext: 'pdf',  label: 'PDF',  category: 'Doc' },
+  { ext: 'xlsx', label: 'Excel',category: 'Doc' },
+  { ext: 'xls',  label: 'Excel (xls)', category: 'Doc' },
 ]
+
 
 const VENUE_TYPES = [
   'Stadium',
@@ -84,6 +85,8 @@ const TYPE_COLORS: Record<string, string> = {
   webp:  'bg-pink-900/30 text-pink-300 border-pink-700/40',
   mp4:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
   mov:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
+  skp: 'bg-blue-900/30 text-blue-300 border-blue-700/40',
+  fbx: 'bg-blue-900/30 text-blue-300 border-blue-700/40',
 }
 
 function formatSize(bytes: number) {
@@ -363,9 +366,8 @@ export default function UploadPage() {
               <div className="text-4xl mb-4">📁</div>
               <p className="text-zinc-200 font-medium mb-1">Drop your files here</p>
               <p className="text-zinc-400 text-sm mb-3">or <span className="text-amber-400 hover:underline">browse your computer</span></p>
-              <p className="text-zinc-600 text-xs">MVR · GDTF · 3DS · OBJ · DWG · PDF · Excel · and more · No size limit</p>
               <input ref={projectInputRef} type="file" multiple onChange={e => addProjectFiles(e.target.files)} className="hidden"
-                accept=".mvr,.gdtf,.3ds,.obj,.dxf,.dwg,.glb,.gltf,.blend,.ma,.exr,.pdf,.xlsx,.xls" />
+                accept=".mvr,.fbx,.skp,.glb,.gltf,.obj,.dwg,.dxf,.3ds,.gdtf,.exr,.pdf,.xlsx,.xls" />
             </div>
 
             {/* Liste des fichiers */}
@@ -389,7 +391,7 @@ export default function UploadPage() {
             {/* Formats acceptés */}
             <div className="mt-4 pt-4 border-t border-zinc-800">
               <p className="text-xs font-mono text-zinc-600 mb-2 uppercase tracking-wider">Accepted formats</p>
-              {['3D', 'HDRI', 'Docs'].map(cat => (
+              {['3D', 'Fixtures', 'HDRI', 'Docs'].map(cat => (
                 <div key={cat} className="mb-1.5 flex items-start gap-2">
                   <span className="text-xs text-zinc-600 w-10 flex-shrink-0 font-mono pt-0.5">{cat}</span>
                   <div className="flex flex-wrap gap-1">
