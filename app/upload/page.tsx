@@ -487,7 +487,7 @@ export default function UploadPage() {
 
               {/* License */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h2 className="text-sm font-medium text-zinc-300 mb-1">License</h2>
+                <h2 className="text-sm font-medium text-zinc-300 mb-1">License Creative Commons</h2>
                 <p className="text-xs text-zinc-500 mb-4">Choose how others can use your files.</p>
                 <div className="flex flex-col gap-3">
                   {LICENSES.map(l => (
