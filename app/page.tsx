@@ -164,9 +164,20 @@ function FileCard({ file }: { file: FileItem }) {
           <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
             {file.title}
           </h3>
-          <span className={`text-xs px-1.5 py-0.5 rounded font-mono border flex-shrink-0 ${typeColor}`}>
-            .{file.file_type}
-          </span>
+          <div className="flex gap-1 flex-wrap flex-shrink-0">
+  <span className={`text-xs px-1.5 py-0.5 rounded font-mono border ${typeColor}`}>
+    .{file.file_type}
+  </span>
+  {file.additional_files && file.additional_files.map((url, i) => {
+    const ext = url.split('.').pop()?.split('?')[0]?.toLowerCase() ?? ''
+    const color = TYPE_COLORS[ext] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'
+    return (
+      <span key={i} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${color}`}>
+        .{ext}
+      </span>
+    )
+  })}
+</div>
         </div>
 
         {/* Venue */}
