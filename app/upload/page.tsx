@@ -233,7 +233,8 @@ export default function UploadPage() {
     for (const pf of projectFiles) {
       setProgressLabel(`Uploading ${pf.file.name}...`)
       setProgress(Math.round((uploaded / totalFiles) * 80))
-      const path = `${profile.id}/${Date.now()}_${pf.file.name}`
+      const safeName = pf.file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      const path = `${profile.id}/${Date.now()}_${safeName}`
       const { error } = await supabase.storage.from('mvr-files').upload(path, pf.file, { upsert: false })
       if (error) {
         setMessage({ type: 'error', text: `Failed to upload ${pf.file.name}: ${error.message}` })
@@ -247,7 +248,8 @@ export default function UploadPage() {
     for (const mf of mediaFiles) {
       setProgressLabel(`Uploading ${mf.file.name}...`)
       setProgress(Math.round((uploaded / totalFiles) * 80))
-      const path = `${profile.id}/media/${Date.now()}_${mf.file.name}`
+      const safeName = mf.file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      const path = `${profile.id}/media/${Date.now()}_${safeName}`
       const { error } = await supabase.storage.from('mvr-files').upload(path, mf.file, { upsert: false })
       if (error) {
         setMessage({ type: 'error', text: `Failed to upload ${mf.file.name}: ${error.message}` })
