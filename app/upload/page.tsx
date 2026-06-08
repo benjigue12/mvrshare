@@ -266,6 +266,11 @@ export default function UploadPage() {
     // URL publique du fichier principal
     const { data: urlData } = supabase.storage.from('mvr-files').getPublicUrl(storedProjectPaths[0])
 
+const additionalUrls = storedProjectPaths.slice(1).map(p => {
+  const { data } = supabase.storage.from('mvr-files').getPublicUrl(p)
+  return data.publicUrl
+})
+
     const { data: fileData, error: dbError } = await supabase
       .from('files')
       .insert({
@@ -279,6 +284,7 @@ export default function UploadPage() {
         download_url: urlData.publicUrl,
         venue_type: venueType || null,
         media_urls: storedMediaUrls.length > 0 ? storedMediaUrls : null,
+        additional_files: additionalUrls.length > 0 ? additionalUrls : null,
         tags: tags.length > 0 ? tags : null,
         license: license as any,
         is_public: true,

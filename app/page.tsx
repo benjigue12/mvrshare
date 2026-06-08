@@ -19,6 +19,7 @@ type FileItem = {
   tags: string[] | null
   venue_type: string | null
   media_urls: string[] | null
+  additional_files: string[] | null
   description: string | null
 }
 
@@ -92,11 +93,16 @@ function MediaCarousel({ urls }: { urls: string[] }) {
         <video src={url} className="w-full h-full object-cover" muted autoPlay loop playsInline />
       )}
       {isPdf(url) && (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-zinc-800">
-          <span className="text-4xl">📄</span>
-          <span className="text-xs text-zinc-400 font-mono">PDF Preview</span>
-        </div>
-      )}
+  <a href={url} target="_blank" onClick={e => e.stopPropagation()} className="w-full h-full flex flex-col items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-750 transition-colors">
+    <div className="w-16 h-20 bg-red-900/30 border border-red-700/40 rounded-lg flex items-center justify-center">
+      <span className="text-2xl">📄</span>
+    </div>
+    <div className="text-center">
+      <p className="text-xs text-zinc-300 font-medium">PDF Document</p>
+      <p className="text-xs text-amber-400 mt-1">Click to open ↗</p>
+    </div>
+  </a>
+)}
 
       {/* Navigation */}
       {total > 1 && (
@@ -176,6 +182,20 @@ function FileCard({ file }: { file: FileItem }) {
             ))}
           </div>
         )}
+
+        {file.additional_files && file.additional_files.length > 0 && (
+  <div className="flex gap-1.5 flex-wrap mb-3">
+    {file.additional_files.map((url, i) => {
+      const ext = url.split('.').pop()?.toLowerCase() ?? ''
+      return (
+        <a key={i} href={url} target="_blank" onClick={e => e.stopPropagation()}
+          className="text-xs font-mono px-2 py-0.5 rounded border bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-amber-500 hover:text-amber-300 transition-colors">
+          .{ext} ↗
+        </a>
+      )
+    })}
+  </div>
+)}
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-zinc-800">
