@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 
 type FileItem = {
@@ -13,8 +13,13 @@ type FileItem = {
   created_at: string
   username: string
   display_name: string | null
+  first_name: string | null
+  last_name: string | null
+  avatar_url: string | null
   tags: string[] | null
   venue_type: string | null
+  media_urls: string[] | null
+  description: string | null
 }
 
 type SiteStats = {
@@ -25,12 +30,14 @@ type SiteStats = {
 }
 
 type Profile = {
+  id: string
   username: string
   display_name: string | null
   avatar_url: string | null
 }
 
 function formatSize(bytes: number) {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
   if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`
   return `${bytes} B`
@@ -47,43 +54,149 @@ function timeAgo(dateStr: string) {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  mvr:  'bg-amber-900/30 text-amber-300 border border-amber-700/40',
-  gdtf: 'bg-purple-900/30 text-purple-300 border border-purple-700/40',
-  '3ds':'bg-blue-900/30 text-blue-300 border border-blue-700/40',
-  obj:  'bg-blue-900/30 text-blue-300 border border-blue-700/40',
-  blend:'bg-green-900/30 text-green-300 border border-green-700/40',
-  other:'bg-zinc-800 text-zinc-400 border border-zinc-700',
+  mvr:   'bg-amber-900/30 text-amber-300 border-amber-700/40',
+  gdtf:  'bg-purple-900/30 text-purple-300 border-purple-700/40',
+  fbx:   'bg-rose-900/30 text-rose-300 border-rose-700/40',
+  skp:   'bg-teal-900/30 text-teal-300 border-teal-700/40',
+  glb:   'bg-cyan-900/30 text-cyan-300 border-cyan-700/40',
+  gltf:  'bg-cyan-900/30 text-cyan-300 border-cyan-700/40',
+  obj:   'bg-blue-900/30 text-blue-300 border-blue-700/40',
+  dwg:   'bg-violet-900/30 text-violet-300 border-violet-700/40',
+  dxf:   'bg-indigo-900/30 text-indigo-300 border-indigo-700/40',
+  '3ds': 'bg-orange-900/30 text-orange-300 border-orange-700/40',
+  exr:   'bg-yellow-900/30 text-yellow-300 border-yellow-700/40',
+  pdf:   'bg-red-900/30 text-red-300 border-red-700/40',
+  xlsx:  'bg-emerald-900/30 text-emerald-300 border-emerald-700/40',
+  xls:   'bg-emerald-900/30 text-emerald-300 border-emerald-700/40',
 }
 
-function FileCard({ file }: { file: FileItem }) {
-  const typeColor = TYPE_COLORS[file.file_type] ?? TYPE_COLORS.other
+function isPdf(url: string) { return url.toLowerCase().includes('.pdf') }
+function isVideo(url: string) { return url.match(/\.(mp4|mov)$/i) !== null }
+function isImage(url: string) { return url.match(/\.(jpg|jpeg|png|webp)$/i) !== null }
+
+// ---- Carrousel ----
+function MediaCarousel({ urls }: { urls: string[] }) {
+  const [current, setCurrent] = useState(0)
+  const total = urls.length
+
+  if (total === 0) return null
+
+  const url = urls[current]
+
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-amber-700/50 transition-colors cursor-pointer group">
-      <div className="flex items-start gap-3">
-        <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold font-mono ${typeColor}`}>
-          {file.file_type.toUpperCase().slice(0, 4)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-zinc-100 truncate group-hover:text-amber-300 transition-colors">
-            {file.title}
-          </h3>
-          <p className="text-xs text-zinc-500 mt-0.5 font-mono">
-            @{file.username} · {formatSize(file.file_size)} · {timeAgo(file.created_at)}
-          </p>
-        </div>
-      </div>
-      {file.tags && file.tags.length > 0 && (
-        <div className="flex gap-1.5 mt-3 flex-wrap">
-          {file.tags.slice(0, 3).map(tag => (
-            <span key={tag} className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">{tag}</span>
-          ))}
+    <div className="relative w-full aspect-[4/3] bg-zinc-800 overflow-hidden group">
+      {isImage(url) && (
+        <img src={url} alt="" className="w-full h-full object-cover" />
+      )}
+      {isVideo(url) && (
+        <video src={url} className="w-full h-full object-cover" muted autoPlay loop playsInline />
+      )}
+      {isPdf(url) && (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-zinc-800">
+          <span className="text-4xl">📄</span>
+          <span className="text-xs text-zinc-400 font-mono">PDF Preview</span>
         </div>
       )}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800">
-        <span className="text-xs text-zinc-500 font-mono">↓ {file.download_count.toLocaleString()}</span>
-        <span className="text-xs text-zinc-500 font-mono">♥ {file.like_count}</span>
-      </div>
+
+      {/* Navigation */}
+      {total > 1 && (
+        <>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); setCurrent(p => (p - 1 + total) % total) }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-zinc-900/80 rounded-full flex items-center justify-center text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:bg-zinc-800"
+          >‹</button>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); setCurrent(p => (p + 1) % total) }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-zinc-900/80 rounded-full flex items-center justify-center text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:bg-zinc-800"
+          >›</button>
+
+          {/* Dots */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {urls.map((_, i) => (
+              <button
+                key={i}
+                onClick={e => { e.preventDefault(); e.stopPropagation(); setCurrent(i) }}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === current ? 'bg-white' : 'bg-white/40'}`}
+              />
+            ))}
+          </div>
+
+          {/* Counter */}
+          <div className="absolute top-2 right-2 bg-zinc-900/70 rounded-full px-2 py-0.5 text-xs text-zinc-300 font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+            {current + 1}/{total}
+          </div>
+        </>
+      )}
     </div>
+  )
+}
+
+// ---- File Card ----
+function FileCard({ file }: { file: FileItem }) {
+  const typeColor = TYPE_COLORS[file.file_type] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'
+  const hasMedia = file.media_urls && file.media_urls.length > 0
+  const displayName = [file.first_name, file.last_name].filter(Boolean).join(' ') || file.username
+
+  return (
+    <a href={`/files/${file.id}`} className="block bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-amber-700/50 transition-colors group">
+
+      {/* Media */}
+      {hasMedia ? (
+        <MediaCarousel urls={file.media_urls!} />
+      ) : (
+        <div className="w-full aspect-[4/3] bg-zinc-800 flex items-center justify-center">
+          <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-sm font-bold font-mono border ${typeColor}`}>
+            {file.file_type.toUpperCase().slice(0, 4)}
+          </div>
+        </div>
+      )}
+
+      {/* Infos */}
+      <div className="p-4">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
+            {file.title}
+          </h3>
+          <span className={`text-xs px-1.5 py-0.5 rounded font-mono border flex-shrink-0 ${typeColor}`}>
+            .{file.file_type}
+          </span>
+        </div>
+
+        {/* Venue */}
+        {file.venue_type && (
+          <p className="text-xs text-zinc-500 mb-2">{file.venue_type}</p>
+        )}
+
+        {/* Tags */}
+        {file.tags && file.tags.length > 0 && (
+          <div className="flex gap-1 flex-wrap mb-3">
+            {file.tags.slice(0, 3).map(tag => (
+              <span key={tag} className="text-xs bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded font-mono">{tag}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-zinc-800">
+          <div className="flex items-center gap-2">
+            {file.avatar_url ? (
+              <img src={file.avatar_url} alt={file.username} className="w-5 h-5 rounded-full object-cover" />
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono">
+                {(file.username).slice(0, 1).toUpperCase()}
+              </div>
+            )}
+            <span className="text-xs text-zinc-500 font-mono">@{file.username}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
+            <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
+            <span className="text-xs text-zinc-600">{timeAgo(file.created_at)}</span>
+          </div>
+        </div>
+      </div>
+    </a>
   )
 }
 
@@ -97,15 +210,9 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 }
 
 function Avatar({ profile }: { profile: Profile }) {
-  const initials = (profile.display_name ?? profile.username).slice(0, 2).toUpperCase()
+  const initials = profile.username.slice(0, 2).toUpperCase()
   if (profile.avatar_url) {
-    return (
-      <img
-        src={profile.avatar_url}
-        alt={profile.username}
-        className="w-8 h-8 rounded-full object-cover border border-zinc-700"
-      />
-    )
+    return <img src={profile.avatar_url} alt={profile.username} className="w-8 h-8 rounded-full object-cover border border-zinc-700" />
   }
   return (
     <div className="w-8 h-8 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono">
@@ -114,12 +221,17 @@ function Avatar({ profile }: { profile: Profile }) {
   )
 }
 
+const FILE_TYPES = ['all', 'mvr', 'gdtf', 'fbx', 'skp', 'glb', 'pdf']
+const VENUE_FILTERS = ['All venues', 'Stadium', 'Concert / Arena', 'Festival / Outdoor', 'Theatre / Opera', 'Club / DJ', 'TV / Broadcast', 'Event / Corporate', 'Exhibition', 'Architectural', 'House of Worship', 'Generic / Template', 'Assets']
+
 export default function Home() {
   const [files, setFiles] = useState<FileItem[]>([])
   const [stats, setStats] = useState<SiteStats | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<string>('all')
+  const [filter, setFilter] = useState('all')
+  const [venueFilter, setVenueFilter] = useState('All venues')
+  const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
 
   const supabase = createClient()
@@ -127,11 +239,10 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       const { data: { session } } = await supabase.auth.getSession()
-
       if (session?.user) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('username, display_name, avatar_url')
+          .select('id, username, display_name, avatar_url')
           .eq('id', session.user.id)
           .single()
         if (profileData) setProfile(profileData)
@@ -141,7 +252,7 @@ export default function Home() {
         .from('files_with_author')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(12)
+        .limit(48)
 
       const { data: statsData } = await supabase
         .from('site_stats')
@@ -152,7 +263,6 @@ export default function Home() {
       if (statsData) setStats(statsData)
       setLoading(false)
     }
-
     fetchData()
   }, [])
 
@@ -162,13 +272,19 @@ export default function Home() {
     setMenuOpen(false)
   }
 
-  const filtered = filter === 'all' ? files : files.filter(f => f.file_type === filter)
+  const filtered = files.filter(f => {
+    const matchType = filter === 'all' || f.file_type === filter
+    const matchVenue = venueFilter === 'All venues' || f.venue_type === venueFilter
+    const matchSearch = !search || f.title.toLowerCase().includes(search.toLowerCase()) || f.tags?.some(t => t.includes(search.toLowerCase()))
+    return matchType && matchVenue && matchSearch
+  })
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
 
+      {/* NAV */}
       <nav className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <a href="/" className="font-mono text-lg font-bold text-amber-400">
             MVR<span className="text-zinc-500">share</span>
           </a>
@@ -176,47 +292,33 @@ export default function Home() {
             <a href="#gallery" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Gallery</a>
             <a href="#forum" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">Forum</a>
             <a href="#about" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">About</a>
-            <span className="text-xs font-mono bg-amber-900/30 text-amber-400 border border-amber-700/40 px-2 py-1 rounded">
-              OPEN SOURCE
-            </span>
+            <span className="text-xs font-mono bg-amber-900/30 text-amber-400 border border-amber-700/40 px-2 py-1 rounded">OPEN SOURCE</span>
             {profile ? (
               <div className="relative">
-                <button
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                >
+                <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <Avatar profile={profile} />
                   <span className="text-sm text-zinc-300 font-mono">@{profile.username}</span>
                   <span className="text-zinc-600 text-xs">▾</span>
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 top-10 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl w-48 py-1 z-50">
-                    <a href={`/profile/${profile.username}`} className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>
-                      My profile
-                    </a>
-                    <a href="/upload" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>
-                      Upload a file
-                    </a>
-                    <a href="/settings" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>
-                      Settings
-                    </a>
+                    <a href={`/profile/${profile.username}`} className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>My profile</a>
+                    <a href="/upload" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>Upload a file</a>
+                    <a href="/settings" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>Settings</a>
                     <div className="border-t border-zinc-800 my-1" />
-                    <button onClick={handleSignOut} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 transition-colors">
-                      Sign out
-                    </button>
+                    <button onClick={handleSignOut} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 transition-colors">Sign out</button>
                   </div>
                 )}
               </div>
             ) : (
-              <a href="/auth" className="text-sm bg-amber-400 text-zinc-950 font-medium px-4 py-1.5 rounded-lg hover:bg-amber-300 transition-colors">
-                Join
-              </a>
+              <a href="/auth" className="text-sm bg-amber-400 text-zinc-950 font-medium px-4 py-1.5 rounded-lg hover:bg-amber-300 transition-colors">Join</a>
             )}
           </div>
         </div>
       </nav>
 
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
+      {/* HERO */}
+      <section className="max-w-7xl mx-auto px-6 pt-16 pb-12">
         <div className="max-w-2xl">
           <h1 className="font-mono text-4xl font-bold leading-tight mb-5">
             The open library for<br />
@@ -227,16 +329,12 @@ export default function Home() {
             Free, open source, built by and for lighting professionals.
           </p>
           <div className="flex gap-3">
-            <a href="#gallery" className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
-              Browse files
-            </a>
-            <a href={profile ? '/upload' : '/auth'} className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 hover:text-zinc-100 transition-colors">
-              Upload a file
-            </a>
+            <a href="#gallery" className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">Browse files</a>
+            <a href={profile ? '/upload' : '/auth'} className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 hover:text-zinc-100 transition-colors">Upload a file</a>
           </div>
         </div>
         {stats && (
-          <div className="flex gap-12 mt-14 pt-10 border-t border-zinc-800">
+          <div className="flex gap-12 mt-12 pt-10 border-t border-zinc-800">
             <StatCard label="MVR files" value={stats.total_files.toLocaleString()} />
             <StatCard label="Designers" value={stats.total_users.toLocaleString()} />
             <StatCard label="Downloads" value={stats.total_downloads.toLocaleString()} />
@@ -245,71 +343,86 @@ export default function Home() {
         )}
       </section>
 
-      <section id="gallery" className="max-w-6xl mx-auto px-6 pb-20">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// gallery</p>
-            <h2 className="text-2xl font-medium">Recently shared files</h2>
+      {/* GALLERY */}
+      <section id="gallery" className="max-w-7xl mx-auto px-6 pb-20">
+
+        {/* Filters */}
+        <div className="flex flex-col gap-3 mb-8">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// gallery</p>
+              <h2 className="text-2xl font-medium">Recently shared files</h2>
+            </div>
+            {/* Search */}
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search files, tags..."
+              className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors w-64"
+            />
           </div>
-          <div className="flex gap-2">
-            {['all', 'mvr', 'gdtf', '3ds', 'blend'].map(type => (
+
+          {/* Type filters */}
+          <div className="flex gap-2 flex-wrap">
+            {FILE_TYPES.map(type => (
               <button
                 key={type}
                 onClick={() => setFilter(type)}
-                className={`text-xs font-mono px-3 py-1.5 rounded-lg border transition-colors ${
-                  filter === type
-                    ? 'bg-amber-400 text-zinc-950 border-amber-400'
-                    : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'
-                }`}
+                className={`text-xs font-mono px-3 py-1.5 rounded-lg border transition-colors ${filter === type ? 'bg-amber-400 text-zinc-950 border-amber-400' : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'}`}
               >
                 {type === 'all' ? 'All' : `.${type}`}
               </button>
             ))}
           </div>
+
+          {/* Venue filters */}
+          <div className="flex gap-2 flex-wrap">
+            {VENUE_FILTERS.map(v => (
+              <button
+                key={v}
+                onClick={() => setVenueFilter(v)}
+                className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${venueFilter === v ? 'bg-zinc-700 text-zinc-100 border-zinc-600' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'}`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 animate-pulse">
-                <div className="flex gap-3">
-                  <div className="w-10 h-10 bg-zinc-800 rounded-lg" />
-                  <div className="flex-1">
-                    <div className="h-4 bg-zinc-800 rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-zinc-800 rounded w-1/2" />
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden animate-pulse">
+                <div className="aspect-[4/3] bg-zinc-800" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-zinc-800 rounded w-3/4" />
+                  <div className="h-3 bg-zinc-800 rounded w-1/2" />
                 </div>
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-zinc-500">
-            <p className="font-mono text-lg mb-2">No files yet</p>
-            <p className="text-sm">Be the first to share a scene!</p>
+            <p className="font-mono text-lg mb-2">No files found</p>
+            <p className="text-sm">Try adjusting your filters or be the first to share a scene!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map(file => (
-              <FileCard key={file.id} file={file} />
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map(file => <FileCard key={file.id} file={file} />)}
           </div>
         )}
       </section>
 
+      {/* CTA */}
       <section id="about" className="border-t border-zinc-800">
-        <div className="max-w-6xl mx-auto px-6 py-20 text-center">
+        <div className="max-w-7xl mx-auto px-6 py-20 text-center">
           <h2 className="font-mono text-3xl font-bold mb-4">Join MVRshare</h2>
-          <p className="text-zinc-400 max-w-md mx-auto mb-8">
-            Free, no ads, open source. Self-host your own instance or contribute on GitHub.
-          </p>
+          <p className="text-zinc-400 max-w-md mx-auto mb-8">Free, no ads, open source. Self-host your own instance or contribute on GitHub.</p>
           <div className="flex gap-3 justify-center">
-            {!profile && (
-              <a href="/auth" className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">
-                Create a free account
-              </a>
-            )}
-            <a href="https://github.com/benjigue12/mvrshare" target="_blank" className="border border-zinc-700 text-zinc-300 px-6 py-2.5 rounded-lg hover:border-zinc-500 transition-colors">
-              View on GitHub
-            </a>
+            {!profile && <a href="/auth" className="bg-amber-400 text-zinc-950 font-medium px-6 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">Create a free account</a>}
+            <a href="https://github.com/benjigue12/mvrshare" target="_blank" className="border border-zinc-700 text-zinc-300 px-6 py-2.5 rounded-lg hover:border-zinc-500 transition-colors">View on GitHub</a>
           </div>
           <div className="flex gap-3 justify-center mt-6">
             {['MIT License', 'Self-hostable', 'No tracking', 'GDTF / MVR'].map(b => (
@@ -319,8 +432,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FOOTER */}
       <footer className="border-t border-zinc-800">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex items-center justify-between">
           <span className="text-xs font-mono text-zinc-600">© 2025 MVRshare — open source community</span>
           <div className="flex gap-6">
             {['GitHub', 'Docs', 'API', 'Discord'].map(l => (
@@ -330,10 +444,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {menuOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-      )}
-
+      {menuOpen && <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />}
     </div>
   )
 }
