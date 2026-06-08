@@ -266,10 +266,11 @@ export default function UploadPage() {
     // URL publique du fichier principal
     const { data: urlData } = supabase.storage.from('mvr-files').getPublicUrl(storedProjectPaths[0])
 
-const additionalUrls = storedProjectPaths.slice(1).map(p => {
+const additionalUrls: string[] = []
+for (const p of storedProjectPaths.slice(1)) {
   const { data } = supabase.storage.from('mvr-files').getPublicUrl(p)
-  return data.publicUrl
-})
+  additionalUrls.push(data.publicUrl)
+}
 
     const { data: fileData, error: dbError } = await supabase
       .from('files')
