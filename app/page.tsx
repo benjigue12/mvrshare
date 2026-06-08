@@ -304,7 +304,10 @@ export default function Home() {
   }
 
   const filtered = files.filter(f => {
-    const matchType = filter === 'all' || f.file_type === filter
+    const additionalExts = (f.additional_files ?? []).map((url: string) =>
+  url.split('.').pop()?.split('?')[0]?.toLowerCase() ?? ''
+)
+const matchType = filter === 'all' || f.file_type === filter || additionalExts.includes(filter)
     const matchVenue = venueFilter === 'All venues' || f.venue_type === venueFilter
     const matchSearch = !search || f.title.toLowerCase().includes(search.toLowerCase()) || f.tags?.some(t => t.includes(search.toLowerCase()))
     return matchType && matchVenue && matchSearch
