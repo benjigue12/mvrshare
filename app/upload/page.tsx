@@ -216,6 +216,7 @@ export default function UploadPage() {
     if (projectFiles.length === 0) { setMessage({ type: 'error', text: 'Please add at least one project file.' }); return }
     if (!title.trim()) { setMessage({ type: 'error', text: 'Please add a title.' }); return }
     if (!venueType) { setMessage({ type: 'error', text: 'Please select a venue type.' }); return }
+    if (mediaFiles.length === 0) { setMessage({ type: 'error', text: 'Please add at least one photo of your project.' }); return }
     if (!acceptedRights) { setMessage({ type: 'error', text: 'Please confirm you hold the rights to publish this content.' }); return }
 
     setUploading(true)
@@ -275,6 +276,7 @@ export default function UploadPage() {
         storage_path: storedProjectPaths[0],
         download_url: urlData.publicUrl,
         venue_type: venueType || null,
+        media_urls: storedMediaUrls.length > 0 ? storedMediaUrls : null,
         tags: tags.length > 0 ? tags : null,
         license: license as any,
         is_public: true,
@@ -424,7 +426,7 @@ export default function UploadPage() {
 
               {/* ---- MÉDIAS ---- */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-medium text-zinc-300 mb-1">Medias <span className="text-zinc-600"> </span></h2>
+            <h2 className="text-sm font-medium text-zinc-300 mb-1">Photos & videos <span className="text-red-400">*</span></h2>
             <p className="text-xs text-zinc-500 mb-4">Add photos or a video of your show or project. Accepted: JPG, PNG, WEBP, MP4, MOV.</p>
 
             <div
@@ -458,7 +460,7 @@ export default function UploadPage() {
 
               {/* Venue type */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h2 className="text-sm font-medium text-zinc-300 mb-4">Stage / Venue type <span className="text-red-400">*</span></h2>
+                <h2 className="text-sm font-medium text-zinc-300 mb-4">Venue type <span className="text-red-400">*</span></h2>
                 <div className="flex flex-wrap gap-2">
                   {VENUE_TYPES.map(v => (
                     <button key={v} type="button" onClick={() => setVenueType(venueType === v ? '' : v)} className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${venueType === v ? 'bg-amber-400 text-zinc-950 border-amber-400' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-500 hover:text-zinc-200'}`}>{v}</button>
@@ -469,7 +471,7 @@ export default function UploadPage() {
               {/* Tags */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
                 <h2 className="text-sm font-medium text-zinc-300 mb-1">Tags</h2>
-                <p className="text-xs text-zinc-500 mb-3">Press Enter to add</p>
+                <p className="text-xs text-zinc-500 mb-3">Press Enter to add.</p>
                 <div className="flex flex-wrap gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 min-h-[44px] focus-within:border-amber-500 transition-colors">
                   {tags.map(tag => (
                     <span key={tag} className="flex items-center gap-1 bg-zinc-700 text-zinc-200 text-xs px-2 py-1 rounded font-mono">
