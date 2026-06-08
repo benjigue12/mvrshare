@@ -92,16 +92,13 @@ function MediaCarousel({ urls }: { urls: string[] }) {
       {isVideo(url) && (
         <video src={url} className="w-full h-full object-cover" muted autoPlay loop playsInline />
       )}
-      {isPdf(url) && (
-  <a href={url} target="_blank" onClick={e => e.stopPropagation()} className="w-full h-full flex flex-col items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-750 transition-colors">
+  {isPdf(url) && (
+  <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-zinc-800">
     <div className="w-16 h-20 bg-red-900/30 border border-red-700/40 rounded-lg flex items-center justify-center">
       <span className="text-2xl">📄</span>
     </div>
-    <div className="text-center">
-      <p className="text-xs text-zinc-300 font-medium">PDF Document</p>
-      <p className="text-xs text-amber-400 mt-1">Click to open ↗</p>
-    </div>
-  </a>
+    <p className="text-xs text-zinc-400 font-mono">PDF Document</p>
+  </div>
 )}
 
       {/* Navigation */}
@@ -160,25 +157,11 @@ function FileCard({ file }: { file: FileItem }) {
       {/* Infos */}
       <div className="p-4">
         {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
-            {file.title}
-          </h3>
-          <div className="flex gap-1 flex-wrap flex-shrink-0">
-  <span className={`text-xs px-1.5 py-0.5 rounded font-mono border ${typeColor}`}>
-    .{file.file_type}
-  </span>
-  {file.additional_files && file.additional_files.map((url, i) => {
-    const ext = url.split('.').pop()?.split('?')[0]?.toLowerCase() ?? ''
-    const color = TYPE_COLORS[ext] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'
-    return (
-      <span key={i} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${color}`}>
-        .{ext}
-      </span>
-    )
-  })}
+        <div className="mb-2">
+  <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
+    {file.title}
+  </h3>
 </div>
-        </div>
 
         {/* Venue */}
         {file.venue_type && (
@@ -193,6 +176,25 @@ function FileCard({ file }: { file: FileItem }) {
             ))}
           </div>
         )}
+
+        {(() => {
+  const allExts = [
+    file.file_type,
+    ...((file.additional_files ?? []).map((url: string) =>
+      url.split('.').pop()?.split('?')[0]?.toLowerCase() ?? ''
+    ))
+  ]
+  const uniqueExts = [...new Set(allExts)].filter(Boolean)
+  return (
+    <div className="flex gap-1 flex-wrap mb-3">
+      {uniqueExts.map(ext => (
+        <span key={ext} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${TYPE_COLORS[ext] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>
+          .{ext}
+        </span>
+      ))}
+    </div>
+  )
+})()}
 
         {file.additional_files && file.additional_files.length > 0 && (
   <div className="flex gap-1.5 flex-wrap mb-3">
