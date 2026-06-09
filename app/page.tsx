@@ -168,16 +168,7 @@ function FileCard({ file }: { file: FileItem }) {
           <p className="text-xs text-zinc-500 mb-2">{file.venue_type}</p>
         )}
 
-        {/* Tags */}
-        {file.tags && file.tags.length > 0 && (
-          <div className="flex gap-1 flex-wrap mb-3">
-            {file.tags.slice(0, 3).map(tag => (
-              <span key={tag} className="text-xs bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded font-mono">{tag}</span>
-            ))}
-          </div>
-        )}
-
-        {(() => {
+                {(() => {
   const allExts = [
     file.file_type,
     ...((file.additional_files ?? []).map((url: string) =>
@@ -196,19 +187,15 @@ function FileCard({ file }: { file: FileItem }) {
   )
 })()}
 
-        {file.additional_files && file.additional_files.length > 0 && (
-  <div className="flex gap-1.5 flex-wrap mb-3">
-    {file.additional_files.map((url, i) => {
-      const ext = url.split('.').pop()?.toLowerCase() ?? ''
-      return (
-        <a key={i} href={url} target="_blank" onClick={e => e.stopPropagation()}
-          className="text-xs font-mono px-2 py-0.5 rounded border bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-amber-500 hover:text-amber-300 transition-colors">
-          .{ext} ↗
-        </a>
-      )
-    })}
-  </div>
-)}
+        {/* Tags */}
+        {file.tags && file.tags.length > 0 && (
+          <div className="flex gap-1 flex-wrap mb-3">
+            {file.tags.slice(0, 3).map(tag => (
+              <span key={tag} className="text-xs bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded font-mono">{tag}</span>
+            ))}
+          </div>
+        )}
+
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-zinc-800">
