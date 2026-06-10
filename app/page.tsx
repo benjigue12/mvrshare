@@ -21,6 +21,8 @@ type FileItem = {
   media_urls: string[] | null
   additional_files: string[] | null
   description: string | null
+  fixture_count: number | null
+  universe_count: number | null
 }
 
 type SiteStats = {
@@ -202,6 +204,21 @@ function FileCard({ file }: { file: FileItem }) {
             </span>
           ))}
         </div>
+
+        {(file.fixture_count || file.universe_count) && (
+  <div className="flex gap-2 mb-2">
+    {file.fixture_count && (
+      <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
+        {file.fixture_count} fixtures
+      </span>
+    )}
+    {file.universe_count && (
+      <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
+        {file.universe_count} univ.
+      </span>
+    )}
+  </div>
+)}
 
         {/* Tags libres */}
         {file.tags && file.tags.length > 0 && (

@@ -143,6 +143,8 @@ export default function UploadPage() {
   const [venueType, setVenueType] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [fixtureCount, setFixtureCount] = useState('')
+  const [universeCount, setUniverseCount] = useState('')
   const [license, setLicense] = useState('cc_by')
   const [acceptedRights, setAcceptedRights] = useState(false)
 
@@ -286,6 +288,8 @@ for (const p of storedProjectPaths.slice(1)) {
         venue_type: venueType || null,
         media_urls: storedMediaUrls.length > 0 ? storedMediaUrls : null,
         additional_files: additionalUrls.length > 0 ? additionalUrls : null,
+        fixture_count: fixtureCount ? parseInt(fixtureCount) : null,
+        universe_count: universeCount ? parseInt(universeCount) : null,
         tags: tags.length > 0 ? tags : null,
         license: license as any,
         is_public: true,
@@ -312,6 +316,7 @@ for (const p of storedProjectPaths.slice(1)) {
     setTitle(''); setDescription(''); setVenueType('')
     setTags([]); setLicense('cc_by'); setAcceptedRights(false)
     setProgress(0); setUploadedFileId(null)
+    setFixtureCount(''); setUniverseCount('')
   }
 
   const hasFiles = projectFiles.length > 0
@@ -432,6 +437,33 @@ for (const p of storedProjectPaths.slice(1)) {
                   <p className="text-xs text-zinc-600 mt-1 text-right">{description.length}/2000</p>
                 </div>
               </div>
+
+              {['mvr', 'gdtf'].includes(projectFiles[0]?.ext ?? '') && (
+  <div className="grid grid-cols-2 gap-3">
+    <div>
+      <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Fixture count</label>
+      <input
+        type="number"
+        value={fixtureCount}
+        onChange={e => setFixtureCount(e.target.value)}
+        placeholder="e.g. 48"
+        min={0}
+        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
+      />
+    </div>
+    <div>
+      <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Universe count</label>
+      <input
+        type="number"
+        value={universeCount}
+        onChange={e => setUniverseCount(e.target.value)}
+        placeholder="e.g. 4"
+        min={0}
+        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
+      />
+    </div>
+  </div>
+)}
 
               {/* ---- MÉDIAS ---- */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
