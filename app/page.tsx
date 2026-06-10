@@ -255,10 +255,30 @@ function FileCard({ file }: { file: FileItem }) {
   )
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function useCountUp(target: number, duration = 1500) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (target === 0) return
+    const start = Date.now()
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - start
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setCount(Math.floor(eased * target))
+      if (progress === 1) clearInterval(timer)
+    }, 16)
+    return () => clearInterval(timer)
+  }, [target, duration])
+  return count
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+  const count = useCountUp(value)
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-amber-400 font-mono">{value}</div>
+      <div className="text-2xl font-bold text-amber-400 font-mono">
+        {count.toLocaleString()}
+      </div>
       <div className="text-xs text-zinc-500 font-mono mt-1 uppercase tracking-wider">{label}</div>
     </div>
   )
@@ -396,11 +416,11 @@ export default function Home() {
         </div>
         {stats && (
   <div className="flex gap-12 mt-12 pt-10 border-t border-zinc-800">
-    <StatCard label="Files" value={stats.total_files.toLocaleString()} />
-    <StatCard label="Designers" value={stats.total_users.toLocaleString()} />
-    <StatCard label="Downloads" value={stats.total_downloads.toLocaleString()} />
-    <StatCard label="Fixtures" value={stats.total_fixtures.toLocaleString()} />
-    <StatCard label="Universes" value={stats.total_universes.toLocaleString()} />
+  <StatCard label="Files" value={stats.total_files} />
+  <StatCard label="Designers" value={stats.total_users} />
+  <StatCard label="Downloads" value={stats.total_downloads} />
+  <StatCard label="Fixtures" value={stats.total_fixtures} />
+  <StatCard label="Universes" value={stats.total_universes} /> 
   </div>
 )}
       </section>
