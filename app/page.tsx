@@ -223,8 +223,8 @@ function FileCard({ file }: { file: FileItem }) {
             )}
             <span className="text-xs text-zinc-500 font-mono">@{file.username}</span>
           </div>
-          <div className="flex items-center gap-3">
-           <span className="text-xs text-zinc-600 font-mono">{formatSize(file.file_size)}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+           <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded">{formatSize(file.file_size)}</span>
            <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
            <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
          </div>
