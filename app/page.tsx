@@ -76,10 +76,8 @@ const VENUE_FILTERS = ['Stadium', 'Concert / Arena', 'Festival / Outdoor', 'Thea
 const SORT_OPTIONS = [
   { id: 'recent',       label: 'Most recent' },
   { id: 'popular',      label: 'Most popular' },
-  { id: 'downloads',    label: 'Most downloaded' },
-  { id: 'likes',        label: 'Most liked' },
-  { id: 'size_desc',    label: 'Heaviest first' },
-  { id: 'size_asc',     label: 'Lightest first' },
+  { id: 'size_desc',    label: 'Heaviest' },
+  { id: 'size_asc',     label: 'Lightest' },
   { id: 'name_asc',     label: 'Name A → Z' },
   { id: 'name_desc',    label: 'Name Z → A' },
 ]
@@ -226,10 +224,10 @@ function FileCard({ file }: { file: FileItem }) {
             <span className="text-xs text-zinc-500 font-mono">@{file.username}</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
-            <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
-            <span className="text-xs text-zinc-600">{timeAgo(file.created_at)}</span>
-          </div>
+           <span className="text-xs text-zinc-600 font-mono">{formatSize(file.file_size)}</span>
+           <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
+           <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
+         </div>
         </div>
       </div>
     </a>
