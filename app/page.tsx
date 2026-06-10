@@ -263,7 +263,7 @@ function useCountUp(target: number, duration = 1500) {
     const timer = setInterval(() => {
       const elapsed = Date.now() - start
       const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
+      const eased = 1 - Math.pow(1 - progress, 5)
       setCount(Math.floor(eased * target))
       if (progress === 1) clearInterval(timer)
     }, 16)
