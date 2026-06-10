@@ -29,7 +29,8 @@ type SiteStats = {
   total_files: number
   total_users: number
   total_downloads: number
-  total_topics: number
+  total_fixtures: number
+  total_universes: number
 }
 
 type Profile = {
@@ -385,7 +386,7 @@ export default function Home() {
             <span className="text-amber-400">lighting designers</span>
           </h1>
           <p className="text-zinc-400 text-lg leading-relaxed mb-8">
-            Share your MVR files, 3D scenes and GDTF patches with the community.
+            Share your MVR files, 3D scenes and Lighting plots with the community.
             Free, open source, built by and for lighting professionals.
           </p>
           <div className="flex gap-3">
@@ -394,13 +395,14 @@ export default function Home() {
           </div>
         </div>
         {stats && (
-          <div className="flex gap-12 mt-12 pt-10 border-t border-zinc-800">
-            <StatCard label="MVR files" value={stats.total_files.toLocaleString()} />
-            <StatCard label="Designers" value={stats.total_users.toLocaleString()} />
-            <StatCard label="Downloads" value={stats.total_downloads.toLocaleString()} />
-            <StatCard label="Forum topics" value={stats.total_topics.toLocaleString()} />
-          </div>
-        )}
+  <div className="flex gap-12 mt-12 pt-10 border-t border-zinc-800">
+    <StatCard label="Files" value={stats.total_files.toLocaleString()} />
+    <StatCard label="Designers" value={stats.total_users.toLocaleString()} />
+    <StatCard label="Downloads" value={stats.total_downloads.toLocaleString()} />
+    <StatCard label="Fixtures" value={stats.total_fixtures.toLocaleString()} />
+    <StatCard label="Universes" value={stats.total_universes.toLocaleString()} />
+  </div>
+)}
       </section>
 
       {/* GALLERY */}
