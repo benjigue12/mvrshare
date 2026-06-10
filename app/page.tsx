@@ -83,6 +83,11 @@ const SORT_OPTIONS = [
   { id: 'name_asc',     label: 'Name A → Z' },
   { id: 'name_desc',    label: 'Name Z → A' },
 ]
+const LICENSE_FILTERS = [
+  { id: 'cc_by',    label: 'CC BY',    desc: 'Credit required' },
+  { id: 'cc_by_nc', label: 'CC BY-NC', desc: 'Non-commercial' },
+  { id: 'cc0',      label: 'CC0',      desc: 'Public domain' },
+]
 
 function isPdf(url: string) { return url.toLowerCase().includes('.pdf') }
 function isVideo(url: string) { return url.match(/\.(mp4|mov)$/i) !== null }
@@ -258,6 +263,7 @@ export default function Home() {
   const [venueFilter, setVenueFilter] = useState('')
   const [sortBy, setSortBy] = useState('recent')
   const [search, setSearch] = useState('')
+  const [licenseFilter, setLicenseFilter] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
 
   const supabase = createClient()
@@ -298,8 +304,9 @@ export default function Home() {
       const allExts = [f.file_type, ...additionalExts]
       const matchType = selectedTypes.length === 0 || selectedTypes.some(t => allExts.includes(t))
       const matchVenue = !venueFilter || f.venue_type === venueFilter
+      const matchLicense = !licenseFilter || (f as any).license === licenseFilter
       const matchSearch = !search || f.title.toLowerCase().includes(search.toLowerCase()) || f.tags?.some(t => t.includes(search.toLowerCase()))
-      return matchType && matchVenue && matchSearch
+      return matchType && matchVenue && matchSearch && matchLicense
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -314,7 +321,7 @@ export default function Home() {
       }
     })
 
-  const activeFiltersCount = selectedTypes.length + (venueFilter ? 1 : 0)
+  const activeFiltersCount = selectedTypes.length + (venueFilter ? 1 : 0) + (licenseFilter ? 1 : 0)
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -462,6 +469,26 @@ export default function Home() {
               </div>
             </Dropdown>
 
+            {/* License */}
+<Dropdown label={
+  licenseFilter
+    ? <span className="text-amber-300">{LICENSE_FILTERS.find(l => l.id === licenseFilter)?.label}</span>
+    : <span className="text-zinc-400">License</span>
+}>
+  <div className="py-1">
+    <button onClick={() => setLicenseFilter('')} className={`w-full text-left px-4 py-2 text-sm transition-colors ${!licenseFilter ? 'text-amber-300 bg-amber-900/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}>
+      All licenses
+    </button>
+    {LICENSE_FILTERS.map(l => (
+      <button key={l.id} onClick={() => setLicenseFilter(l.id === licenseFilter ? '' : l.id)}
+        className={`w-full text-left px-4 py-2 text-sm transition-colors ${licenseFilter === l.id ? 'text-amber-300 bg-amber-900/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}>
+        <span className="font-mono">{l.label}</span>
+        <span className="text-xs text-zinc-600 ml-2">{l.desc}</span>
+      </button>
+    ))}
+  </div>
+</Dropdown>
+
             {/* Sort */}
             <Dropdown label={
               <span className="text-zinc-400">
@@ -484,7 +511,7 @@ export default function Home() {
             {/* Reset filters */}
             {activeFiltersCount > 0 && (
               <button
-                onClick={() => { setSelectedTypes([]); setVenueFilter('') }}
+                onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter('') }}
                 className="text-xs text-zinc-500 hover:text-red-400 transition-colors px-2 py-2 flex items-center gap-1"
               >
                 ✕ Clear filters
