@@ -395,7 +395,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-mono text-amber-400 tracking-widest mb-1">// gallery</p>
               <h2 className="text-2xl font-medium">
-                Recently shared files
+                Shared files
                 {filtered.length !== files.length && (
                   <span className="text-base font-normal text-zinc-500 ml-3">{filtered.length} results</span>
                 )}
