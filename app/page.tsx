@@ -212,23 +212,26 @@ function FileCard({ file }: { file: FileItem }) {
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-3 border-t border-zinc-800">
-          <div className="flex items-center gap-2">
-            {file.avatar_url ? (
-              <img src={file.avatar_url} alt={file.username} className="w-5 h-5 rounded-full object-cover" />
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono">
-                {file.username.slice(0, 1).toUpperCase()}
-              </div>
-            )}
-            <span className="text-xs text-zinc-500 font-mono">@{file.username}</span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-           <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded">{formatSize(file.file_size)}</span>
-           <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
-           <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
-         </div>
+        <div className="pt-3 border-t border-zinc-800 flex flex-col gap-2">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2 min-w-0">
+      {file.avatar_url ? (
+        <img src={file.avatar_url} alt={file.username} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+      ) : (
+        <div className="w-5 h-5 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono flex-shrink-0">
+          {file.username.slice(0, 1).toUpperCase()}
         </div>
+      )}
+      <span className="text-xs text-zinc-500 font-mono truncate">@{file.username}</span>
+    </div>
+    <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded flex-shrink-0">{formatSize(file.file_size)}</span>
+  </div>
+  <div className="flex items-center gap-3">
+    <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
+    <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
+    <span className="text-xs text-zinc-600 ml-auto">{timeAgo(file.created_at)}</span>
+  </div>
+</div>
       </div>
     </a>
   )
