@@ -74,7 +74,7 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 const ALL_FILE_TYPES = ['mvr', 'gdtf', 'fbx', 'skp', 'glb', 'gltf', 'obj', 'dwg', 'dxf', '3ds', 'exr', 'pdf', 'xlsx', 'xls']
-const VENUE_FILTERS = ['Stadium', 'Concert / Arena', 'Festival / Outdoor', 'Theatre / Opera', 'Club / DJ', 'TV / Broadcast', 'Event / Corporate', 'Exhibition', 'Architectural', 'House of Worship', 'Generic / Template', 'Assets']
+const VENUE_FILTERS = ['Stadium', 'Concert / Arena', 'Festival / Outdoor', 'Theatre / Opera', 'Club / DJ', 'TV / Broadcast', 'Event / Corporate', 'Exhibition', 'Architectural', 'House of Worship', 'Generic / Template', 'Fixture', 'Assets']
 const SORT_OPTIONS = [
   { id: 'recent',       label: 'Most recent' },
   { id: 'popular',      label: 'Most popular' },

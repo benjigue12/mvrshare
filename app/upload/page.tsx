@@ -34,6 +34,7 @@ const VENUE_TYPES = [
   'Architectural',
   'House of Worship',
   'Generic / Template',
+  'Fixture',
   'Assets',
 ]
 
