@@ -167,7 +167,12 @@ function MediaCarousel({ urls }: { urls: string[] }) {
 }
 
 // ---- File Card ----
-function FileCard({ file }: { file: FileItem }) {
+function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
+  file: FileItem
+  isFavorite: boolean
+  isLoggedIn: boolean
+  onToggleFav: (id: string) => void
+}) {
   const typeColor = TYPE_COLORS[file.file_type] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'
   const hasMedia = file.media_urls && file.media_urls.length > 0
 
@@ -176,84 +181,78 @@ function FileCard({ file }: { file: FileItem }) {
   ))]
   const uniqueExts = [...new Set(allExts)].filter(Boolean)
 
-  return (
-    <a href={`/files/${file.id}`} className="block bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-amber-700/50 transition-colors group">
-      {hasMedia ? (
-        <MediaCarousel urls={file.media_urls!} />
-      ) : (
-        <div className="w-full aspect-[4/3] bg-zinc-800 flex items-center justify-center">
-          <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-sm font-bold font-mono border ${typeColor}`}>
-            {file.file_type.toUpperCase().slice(0, 4)}
+   return (
+    <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-amber-700/50 transition-colors group">
+
+      {/* Bouton étoile */}
+      <button
+        onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFav(file.id) }}
+        className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all shadow-lg opacity-0 group-hover:opacity-100 ${
+          isFavorite ? 'opacity-100 bg-amber-400 text-zinc-950' : 'bg-zinc-900/70 text-zinc-400 hover:text-amber-400'
+        }`}
+      >
+        {isFavorite ? '★' : '☆'}
+      </button>
+
+      <a href={`/files/${file.id}`} className="block">
+        {hasMedia ? (
+          <MediaCarousel urls={file.media_urls!} />
+        ) : (
+          <div className="w-full aspect-[4/3] bg-zinc-800 flex items-center justify-center">
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-sm font-bold font-mono border ${typeColor}`}>
+              {file.file_type.toUpperCase().slice(0, 4)}
+            </div>
           </div>
-        </div>
-      )}
-
-      <div className="p-4">
-        <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug mb-2">
-          {file.title}
-        </h3>
-
-        {file.venue_type && (
-          <p className="text-xs text-zinc-500 mb-2">{file.venue_type}</p>
         )}
 
-        {/* Format tags */}
-        <div className="flex gap-1 flex-wrap mb-2">
-          {uniqueExts.map(ext => (
-            <span key={ext} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${TYPE_COLORS[ext] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>
-              .{ext}
-            </span>
-          ))}
-        </div>
-
-        {(file.fixture_count || file.universe_count) && (
-  <div className="flex gap-2 mb-2">
-    {file.fixture_count && (
-      <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
-        {file.fixture_count} fixtures
-      </span>
-    )}
-    {file.universe_count && (
-      <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
-        {file.universe_count} univ.
-      </span>
-    )}
-  </div>
-)}
-
-        {/* Tags libres */}
-        {file.tags && file.tags.length > 0 && (
-          <div className="flex gap-1 flex-wrap mb-3">
-            {file.tags.slice(0, 3).map(tag => (
-              <span key={tag} className="text-xs bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded font-mono">{tag}</span>
+        <div className="p-4">
+          <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug mb-2">
+            {file.title}
+          </h3>
+          {file.venue_type && <p className="text-xs text-zinc-500 mb-2">{file.venue_type}</p>}
+          <div className="flex gap-1 flex-wrap mb-2">
+            {uniqueExts.map(ext => (
+              <span key={ext} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${TYPE_COLORS[ext] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>.{ext}</span>
             ))}
           </div>
-        )}
-
-        <div className="pt-3 border-t border-zinc-800 flex flex-col gap-2">
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-2 min-w-0">
-      {file.avatar_url ? (
-        <img src={file.avatar_url} alt={file.username} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
-      ) : (
-        <div className="w-5 h-5 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono flex-shrink-0">
-          {file.username.slice(0, 1).toUpperCase()}
+          {(file.fixture_count || file.universe_count) && (
+            <div className="flex gap-2 mb-2">
+              {file.fixture_count && <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">{file.fixture_count} fixtures</span>}
+              {file.universe_count && <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">{file.universe_count} univ.</span>}
+            </div>
+          )}
+          {file.tags && file.tags.length > 0 && (
+            <div className="flex gap-1 flex-wrap mb-3">
+              {file.tags.slice(0, 3).map(tag => (
+                <span key={tag} className="text-xs bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded font-mono">{tag}</span>
+              ))}
+            </div>
+          )}
+          <div className="pt-3 border-t border-zinc-800 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                {file.avatar_url ? (
+                  <img src={file.avatar_url} alt={file.username} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-amber-900/40 border border-amber-700/40 flex items-center justify-center text-xs font-bold text-amber-300 font-mono flex-shrink-0">
+                    {file.username.slice(0, 1).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-xs text-zinc-500 font-mono truncate">@{file.username}</span>
+              </div>
+              <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded flex-shrink-0">{formatSize(file.file_size)}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
+              <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
+              <span className="text-xs text-zinc-600 ml-auto">{timeAgo(file.created_at)}</span>
+            </div>
+          </div>
         </div>
-      )}
-      <span className="text-xs text-zinc-500 font-mono truncate">@{file.username}</span>
+      </a>
     </div>
-    <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded flex-shrink-0">{formatSize(file.file_size)}</span>
-  </div>
-  <div className="flex items-center gap-3">
-    <span className="text-xs text-zinc-600 font-mono">↓ {file.download_count.toLocaleString()}</span>
-    <span className="text-xs text-zinc-600 font-mono">♥ {file.like_count}</span>
-    <span className="text-xs text-zinc-600 ml-auto">{timeAgo(file.created_at)}</span>
-  </div>
-</div>
-      </div>
-    </a>
-  )
-}
+  )}
+  
 
 function useCountUp(target: number, duration = 1500) {
   const [count, setCount] = useState(0)
@@ -303,8 +302,8 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('recent')
   const [search, setSearch] = useState('')
   const [licenseFilter, setLicenseFilter] = useState('')
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [menuOpen, setMenuOpen] = useState(false)
-
   const supabase = createClient()
 
   useEffect(() => {
@@ -313,6 +312,8 @@ export default function Home() {
       if (session?.user) {
         const { data: profileData } = await supabase.from('profiles').select('id, username, display_name, avatar_url').eq('id', session.user.id).single()
         if (profileData) setProfile(profileData)
+        const { data: favData } = await supabase.from('favorites').select('file_id').eq('user_id', session.user.id)
+        if (favData) setFavoriteIds(new Set(favData.map((f: any) => f.file_id)))
       }
       const { data: filesData } = await supabase.from('files_with_author').select('*').order('created_at', { ascending: false }).limit(100)
       const { data: statsData } = await supabase.from('site_stats').select('*').single()
@@ -385,6 +386,7 @@ export default function Home() {
                   <div className="absolute right-0 top-10 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl w-48 py-1 z-50">
                     <a href={`/profile/${profile.username}`} className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>My profile</a>
                     <a href="/upload" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>Upload a file</a>
+                    <a href="/favorites" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>My favorites ★</a>
                     <a href="/settings" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>Settings</a>
                     <div className="border-t border-zinc-800 my-1" />
                     <button onClick={handleSignOut} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 transition-colors">Sign out</button>
@@ -581,7 +583,24 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map(file => <FileCard key={file.id} file={file} />)}
+            {filtered.map(file => (
+  <FileCard
+    key={file.id}
+    file={file}
+    isFavorite={favoriteIds.has(file.id)}
+    isLoggedIn={!!profile}
+    onToggleFav={async (fileId) => {
+      if (!profile) { window.location.href = '/auth'; return }
+      if (favoriteIds.has(fileId)) {
+        await supabase.from('favorites').delete().eq('user_id', profile.id).eq('file_id', fileId)
+        setFavoriteIds(prev => { const next = new Set(prev); next.delete(fileId); return next })
+      } else {
+        await supabase.from('favorites').insert({ user_id: profile.id, file_id: fileId })
+        setFavoriteIds(prev => new Set(prev).add(fileId))
+      }
+    }}
+  />
+))}
           </div>
         )}
       </section>
@@ -617,5 +636,4 @@ export default function Home() {
 
       {menuOpen && <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />}
     </div>
-  )
-}
+  )}
