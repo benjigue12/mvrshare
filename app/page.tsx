@@ -184,15 +184,6 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
    return (
     <div className="relative bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-amber-700/50 transition-colors group">
 
-      {/* Bouton étoile */}
-      <button
-        onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFav(file.id) }}
-        className={`absolute top-10 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all shadow-lg opacity-0 group-hover:opacity-100 ${
-          isFavorite ? 'opacity-100 bg-amber-400 text-zinc-950' : 'bg-zinc-900/70 text-zinc-400 hover:text-amber-400'
-        }`}
-      >
-        {isFavorite ? '★' : '☆'}
-      </button>
 
       <a href={`/files/${file.id}`} className="block">
         {hasMedia ? (
@@ -206,9 +197,18 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
         )}
 
         <div className="p-4">
-          <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug mb-2">
+          <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="text-sm font-medium text-zinc-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug flex-1">
             {file.title}
           </h3>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFav(file.id) }}
+            className={`flex-shrink-0 text-base transition-colors ${isFavorite ? 'text-amber-400' : 'text-zinc-600 hover:text-amber-400'}`}
+            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFavorite ? '★' : '☆'}
+          </button>
+        </div>
           {file.venue_type && <p className="text-xs text-zinc-500 mb-2">{file.venue_type}</p>}
           <div className="flex gap-1 flex-wrap mb-2">
             {uniqueExts.map(ext => (
@@ -572,7 +572,6 @@ export default function Home() {
   </button>
 )}
               </button>
-              
             )}
 
           </div>
