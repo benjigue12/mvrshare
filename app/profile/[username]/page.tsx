@@ -94,7 +94,8 @@ export default function ProfilePage() {
   const [followLoading, setFollowLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [activeTab, setActiveTab] = useState<'files' | 'followers' | 'following'>('files')
+  const [activeTab, setActiveTab] = useState<'files' | 'followers' | 'following' | 'favorites'>('files')
+  const [favoriteFiles, setFavoriteFiles] = useState<any[]>([])
   const [followers, setFollowers] = useState<any[]>([])
   const [following, setFollowing] = useState<any[]>([])
 
@@ -160,6 +161,18 @@ export default function ProfilePage() {
           .single()
         setIsFollowing(!!followData)
       }
+const { data: favData } = await supabase
+        .from('favorites')
+        .select('file_id')
+        .eq('user_id', profileData.id)
+
+      if (favData && favData.length > 0) {
+        const { data: favFiles } = await supabase
+          .from('files_with_author')
+          .select('*')
+          .in('id', favData.map((f: any) => f.file_id))
+        if (favFiles) setFavoriteFiles(favFiles)
+      }
 
       setLoading(false)
     }
@@ -185,6 +198,7 @@ export default function ProfilePage() {
 
     setFollowLoading(false)
   }
+
 
   const isOwnProfile = currentUserId === profile?.id
 
@@ -335,7 +349,7 @@ export default function ProfilePage() {
 
         {/* TABS */}
         <div className="flex gap-1 mb-6 bg-zinc-900 border border-zinc-800 rounded-lg p-1 w-fit">
-          {(['files', 'followers', 'following'] as const).map(tab => (
+          {(['files', 'favorites', 'followers', 'following'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -343,7 +357,7 @@ export default function ProfilePage() {
                 activeTab === tab ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              {tab} ({tab === 'files' ? stats.total_files : tab === 'followers' ? stats.followers_count : stats.following_count})
+              {tab} ({tab === 'files' ? stats.total_files : tab === 'favorites' ? favoriteFiles.length : tab === 'followers' ? stats.followers_count : stats.following_count})
             </button>
           ))}
         </div>
@@ -420,7 +434,37 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {/* TAB FAVORITES */}
+        {activeTab === 'favorites' && (
+          <div>
+            {favoriteFiles.length === 0 ? (
+              <div className="text-center py-16 text-zinc-500">
+                <p className="font-mono">No favorites yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {favoriteFiles.map((file: any) => (
+                  <a key={file.id} href={`/files/${file.id}`} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-amber-700/50 transition-colors group block">
+                    <div className="flex items-start gap-3">
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold font-mono ${TYPE_COLORS[file.file_type] ?? TYPE_COLORS.other}`}>
+                        {file.file_type.toUpperCase().slice(0, 4)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-zinc-100 truncate group-hover:text-amber-300 transition-colors">{file.title}</h3>
+                        <p className="text-xs text-zinc-500 mt-0.5 font-mono">@{file.username} · {file.venue_type}</p>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   )
+  
 }
+
+

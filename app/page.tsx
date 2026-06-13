@@ -187,7 +187,7 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
       {/* Bouton étoile */}
       <button
         onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFav(file.id) }}
-        className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all shadow-lg opacity-0 group-hover:opacity-100 ${
+        className={`absolute top-10 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all shadow-lg opacity-0 group-hover:opacity-100 ${
           isFavorite ? 'opacity-100 bg-amber-400 text-zinc-950' : 'bg-zinc-900/70 text-zinc-400 hover:text-amber-400'
         }`}
       >
@@ -304,6 +304,7 @@ export default function Home() {
   const [licenseFilter, setLicenseFilter] = useState('')
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [menuOpen, setMenuOpen] = useState(false)
+  const [showFavOnly, setShowFavOnly] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -346,7 +347,8 @@ export default function Home() {
       const matchVenue = !venueFilter || f.venue_type === venueFilter
       const matchLicense = !licenseFilter || (f as any).license === licenseFilter
       const matchSearch = !search || f.title.toLowerCase().includes(search.toLowerCase()) || f.tags?.some(t => t.includes(search.toLowerCase()))
-      return matchType && matchVenue && matchSearch && matchLicense
+      const matchFav = !showFavOnly || favoriteIds.has(f.id)
+      return matchType && matchVenue && matchSearch && matchLicense && matchFav
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -557,7 +559,20 @@ export default function Home() {
                 className="text-xs text-zinc-500 hover:text-red-400 transition-colors px-2 py-2 flex items-center gap-1"
               >
                 ✕ Clear filters
+                {profile && (
+  <button
+    onClick={() => setShowFavOnly(f => !f)}
+    className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors ${
+      showFavOnly
+        ? 'bg-amber-400 text-zinc-950 border-amber-400'
+        : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+    }`}
+  >
+    {showFavOnly ? '★' : '☆'} Favorites only
+  </button>
+)}
               </button>
+              
             )}
 
           </div>
