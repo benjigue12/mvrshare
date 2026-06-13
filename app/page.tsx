@@ -553,16 +553,15 @@ export default function Home() {
             </Dropdown>
 
             {/* Reset filters */}
-            {profile && (
+          {profile && (
               <button
                 onClick={() => setShowFavOnly(f => !f)}
-                className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors ${
-                  showFavOnly
-                    ? 'bg-amber-400 text-zinc-950 border-amber-400'
-                    : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                className={`ml-auto text-lg transition-colors ${
+                  showFavOnly ? 'text-amber-400' : 'text-zinc-600 hover:text-amber-400'
                 }`}
+                title="Show favorites only"
               >
-                {showFavOnly ? '★' : '☆'} Favorites only
+                {showFavOnly ? '★' : '☆'}
               </button>
             )}
             {activeFiltersCount > 0 && (
