@@ -363,7 +363,7 @@ export default function Home() {
       }
     })
 
-  const activeFiltersCount = selectedTypes.length + (venueFilter ? 1 : 0) + (licenseFilter ? 1 : 0)
+  const activeFiltersCount = selectedTypes.length + (venueFilter ? 1 : 0) + (licenseFilter ? 1 : 0) + (showFavOnly ? 1 : 0)
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -553,9 +553,21 @@ export default function Home() {
             </Dropdown>
 
             {/* Reset filters */}
+            {profile && (
+              <button
+                onClick={() => setShowFavOnly(f => !f)}
+                className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors ${
+                  showFavOnly
+                    ? 'bg-amber-400 text-zinc-950 border-amber-400'
+                    : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                }`}
+              >
+                {showFavOnly ? '★' : '☆'} Favorites only
+              </button>
+            )}
             {activeFiltersCount > 0 && (
               <button
-                onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter('') }}
+                onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter(''); setShowFavOnly(false) }}
                 className="text-xs text-zinc-500 hover:text-red-400 transition-colors px-2 py-2 flex items-center gap-1"
               >
                 ✕ Clear filters
