@@ -388,7 +388,6 @@ export default function Home() {
                   <div className="absolute right-0 top-10 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl w-48 py-1 z-50">
                     <a href={`/profile/${profile.username}`} className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>My profile</a>
                     <a href="/upload" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>Upload a file</a>
-                    <a href="/favorites" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>My favorites ★</a>
                     <a href="/settings" className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors" onClick={() => setMenuOpen(false)}>Settings</a>
                     <div className="border-t border-zinc-800 my-1" />
                     <button onClick={handleSignOut} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 transition-colors">Sign out</button>
@@ -552,36 +551,21 @@ export default function Home() {
               </div>
             </Dropdown>
 
-            {/* Reset filters */}
-          {profile && (
-              <button
-                onClick={() => setShowFavOnly(f => !f)}
-                className={`ml-auto text-lg transition-colors ${
-                  showFavOnly ? 'text-amber-400' : 'text-zinc-600 hover:text-amber-400'
-                }`}
-                title="Show favorites only"
-              >
-                {showFavOnly ? '★' : '☆'}
-              </button>
-            )}
             {activeFiltersCount > 0 && (
               <button
                 onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter(''); setShowFavOnly(false) }}
                 className="text-xs text-zinc-500 hover:text-red-400 transition-colors px-2 py-2 flex items-center gap-1"
               >
                 ✕ Clear filters
-                {profile && (
-  <button
-    onClick={() => setShowFavOnly(f => !f)}
-    className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors ${
-      showFavOnly
-        ? 'bg-amber-400 text-zinc-950 border-amber-400'
-        : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
-    }`}
-  >
-    {showFavOnly ? '★' : '☆'} Favorites only
-  </button>
-)}
+              </button>
+            )}
+            {profile && (
+              <button
+                onClick={() => setShowFavOnly(f => !f)}
+                className={`ml-auto text-lg transition-colors ${showFavOnly ? 'text-amber-400' : 'text-zinc-600 hover:text-amber-400'}`}
+                title="Show favorites only"
+              >
+                {showFavOnly ? '★' : '☆'}
               </button>
             )}
 
@@ -627,7 +611,8 @@ export default function Home() {
   />
 ))}
           </div>
-        )}
+        )
+}
       </section>
 
       {/* CTA */}
