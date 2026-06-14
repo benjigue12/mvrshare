@@ -307,6 +307,8 @@ export default function Home() {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [menuOpen, setMenuOpen] = useState(false)
   const [showFavOnly, setShowFavOnly] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 24
   const supabase = createClient()
 
   useEffect(() => {
@@ -318,7 +320,7 @@ export default function Home() {
         const { data: favData } = await supabase.from('favorites').select('file_id').eq('user_id', session.user.id)
         if (favData) setFavoriteIds(new Set(favData.map((f: any) => f.file_id)))
       }
-      const { data: filesData } = await supabase.from('files_with_author').select('*').order('created_at', { ascending: false }).limit(100)
+      const { data: filesData } = await supabase.from('files_with_author').select('*').order('created_at', { ascending: false }).limit(500)
       const { data: statsData } = await supabase.from('site_stats').select('*').single()
       if (filesData) setFiles(filesData)
       if (statsData) setStats(statsData)
@@ -338,8 +340,9 @@ export default function Home() {
   }
 
   function toggleType(type: string) {
-    setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])
-  }
+  setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])
+  setCurrentPage(1)
+}
 
   const filtered = files
     .filter(f => {
@@ -366,6 +369,8 @@ export default function Home() {
     })
 
   const activeFiltersCount = selectedTypes.length + (venueFilter ? 1 : 0) + (licenseFilter ? 1 : 0)
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -450,7 +455,7 @@ export default function Home() {
             <input
               type="text"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setCurrentPage(1) }}
               placeholder="Search files, tags..."
               className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors w-64"
             />
@@ -505,7 +510,7 @@ export default function Home() {
                 {VENUE_FILTERS.map(v => (
                   <button
                     key={v}
-                    onClick={() => setVenueFilter(v === venueFilter ? '' : v)}
+                    onClick={() => { setVenueFilter(v === venueFilter ? '' : v); setCurrentPage(1) }}
                     className={`w-full text-left px-4 py-2 text-sm transition-colors ${venueFilter === v ? 'text-amber-300 bg-amber-900/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}
                   >
                     {v}
@@ -544,7 +549,7 @@ export default function Home() {
                 {SORT_OPTIONS.map(s => (
                   <button
                     key={s.id}
-                    onClick={() => setSortBy(s.id)}
+                    onClick={() => { setSortBy(s.id); setCurrentPage(1) }}
                     className={`w-full text-left px-4 py-2 text-sm transition-colors ${sortBy === s.id ? 'text-amber-300 bg-amber-900/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}
                   >
                     {s.label}
@@ -555,7 +560,7 @@ export default function Home() {
 
             {activeFiltersCount > 0 && (
               <button
-                onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter('') }}
+                onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter('') ; setCurrentPage(1) }}
                 className="text-xs text-zinc-500 hover:text-red-400 transition-colors px-2 py-2 flex items-center gap-1"
               >
                 ✕ Clear filters
@@ -563,7 +568,7 @@ export default function Home() {
             )}
          {profile && (
               <button
-                onClick={() => setShowFavOnly(f => !f)}
+                onClick={() => { setShowFavOnly(f => !f); setCurrentPage(1) }}
                 className={`ml-auto flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors ${
                   showFavOnly
                     ? 'bg-amber-400 text-zinc-950 border-amber-400'
@@ -600,7 +605,8 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map(file => (
+            {paginated.map(file => (
+
   <FileCard
     key={file.id}
     file={file}
@@ -621,6 +627,57 @@ export default function Home() {
           </div>
         )
 }
+
+{/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-10">
+            <button
+              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              disabled={currentPage === 1}
+              className="px-3 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              ←
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+              .reduce((acc: (number | string)[], p, idx, arr) => {
+                if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...')
+                acc.push(p)
+                return acc
+              }, [])
+              .map((p, i) =>
+                p === '...' ? (
+                  <span key={`dots-${i}`} className="text-zinc-600 px-1">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => { setCurrentPage(p as number); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                    className={`w-9 h-9 text-sm rounded-lg border transition-colors ${
+                      currentPage === p
+                        ? 'bg-amber-400 text-zinc-950 border-amber-400 font-medium'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+
+            <button
+              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              →
+            </button>
+
+            <span className="text-xs text-zinc-600 font-mono ml-2">
+              {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+            </span>
+          </div>
+        )}
+        
       </section>
 
       {/* CTA */}
