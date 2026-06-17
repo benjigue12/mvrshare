@@ -218,9 +218,26 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
             ))}
           </div>
           {(file.fixture_count || file.universe_count) && (
-            <div className="flex gap-2 mb-2">
-              {file.fixture_count && <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">{file.fixture_count} fixtures</span>}
-              {file.universe_count && <span className="text-xs text-zinc-500 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">{file.universe_count} univ.</span>}
+            <div className="flex gap-3 mb-2">
+              {file.fixture_count && (
+                <span className="flex items-center gap-1 text-xs text-zinc-400">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/>
+                  </svg>
+                  {file.fixture_count}
+                </span>
+              )}
+              {file.universe_count && (
+                <span className="flex items-center gap-1 text-xs text-zinc-400">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    <path d="M2 12h20"/>
+                  </svg>
+                  {file.universe_count}
+                </span>
+              )}
             </div>
           )}
           {file.tags && file.tags.length > 0 && (
@@ -417,7 +434,7 @@ export default function Home() {
           </h1>
           <p className="text-zinc-400 text-lg leading-relaxed mb-8">
             Share your MVR files, 3D scenes and Lighting plots with the community.
-            Free, open source, built by and for lighting professionals.
+            Free, open source, built by and for lighting professionals. In Development
           </p>
           <div className="flex gap-3">
             <button onClick={scrollToGallery} className="bg-amber-400 text-zinc-950 font-medium px-5 py-2.5 rounded-lg hover:bg-amber-300 transition-colors">Browse files</button>
@@ -677,7 +694,7 @@ export default function Home() {
             </span>
           </div>
         )}
-        
+
       </section>
 
       {/* CTA */}
