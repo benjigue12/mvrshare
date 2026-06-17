@@ -221,9 +221,9 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
             <div className="flex gap-3 mb-2">
               {file.fixture_count && (
                 <span className="flex items-center gap-1 text-xs text-zinc-400">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.5-1.5 4.5-3 6H9c-1.5-1.5-3-3.5-3-6a6 6 0 0 1 6-6z"/>
+                    <path d="M9 17h6"/>
                   </svg>
                   {file.fixture_count}
                 </span>
