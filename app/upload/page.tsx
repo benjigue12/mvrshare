@@ -145,6 +145,7 @@ export default function UploadPage() {
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [fixtureCount, setFixtureCount] = useState('')
+  const [paramCount, setParamCount] = useState('')
   const [universeCount, setUniverseCount] = useState('')
   const [license, setLicense] = useState('cc_by')
   const [acceptedRights, setAcceptedRights] = useState(false)
@@ -291,6 +292,7 @@ for (const p of storedProjectPaths.slice(1)) {
         additional_files: additionalUrls.length > 0 ? additionalUrls : null,
         fixture_count: fixtureCount ? parseInt(fixtureCount) : null,
         universe_count: universeCount ? parseInt(universeCount) : null,
+        param_count: paramCount ? parseInt(paramCount) : null,
         tags: tags.length > 0 ? tags : null,
         license: license as any,
         is_public: true,
@@ -318,6 +320,7 @@ for (const p of storedProjectPaths.slice(1)) {
     setTags([]); setLicense('cc_by'); setAcceptedRights(false)
     setProgress(0); setUploadedFileId(null)
     setFixtureCount(''); setUniverseCount('')
+    setParamCount('')
   }
 
   const hasFiles = projectFiles.length > 0
@@ -439,32 +442,70 @@ for (const p of storedProjectPaths.slice(1)) {
                 </div>
               </div>
 
-              {['mvr', 'gdtf'].includes(projectFiles[0]?.ext ?? '') && (
-  <div className="grid grid-cols-2 gap-3">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
+  <h2 className="text-sm font-medium text-zinc-300">Technical info <span className="text-zinc-600">(optional)</span></h2>
+  <div className="grid grid-cols-3 gap-3">
     <div>
-      <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Fixture count</label>
+      <label className="text-xs text-zinc-500 font-mono mb-1.5 block">
+        <span className="flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.5-1.5 4.5-3 6H9c-1.5-1.5-3-3.5-3-6a6 6 0 0 1 6-6z"/><path d="M9 17h6"/></svg>
+          Fixtures
+        </span>
+      </label>
       <input
         type="number"
         value={fixtureCount}
-        onChange={e => setFixtureCount(e.target.value)}
+        onChange={e => {
+          setFixtureCount(e.target.value)
+          const u = parseInt(universeCount)
+          if (!u) setParamCount(String(parseInt(e.target.value || '0') * 0))
+        }}
         placeholder="e.g. 48"
         min={0}
         className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
       />
     </div>
     <div>
-      <label className="text-xs text-zinc-500 font-mono mb-1.5 block">Universe count</label>
+      <label className="text-xs text-zinc-500 font-mono mb-1.5 block">
+        <span className="flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+          Universes
+        </span>
+      </label>
       <input
         type="number"
         value={universeCount}
-        onChange={e => setUniverseCount(e.target.value)}
+        onChange={e => {
+          setUniverseCount(e.target.value)
+          const u = parseInt(e.target.value || '0')
+          if (u > 0) setParamCount(String(u * 512))
+        }}
         placeholder="e.g. 4"
         min={0}
         className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
       />
     </div>
+    <div>
+      <label className="text-xs text-zinc-500 font-mono mb-1.5 block">
+        <span className="flex items-center gap-1">Parameters</span>
+      </label>
+      <div className="relative">
+        <input
+          type="number"
+          value={paramCount}
+          onChange={e => setParamCount(e.target.value)}
+          placeholder="auto"
+          min={0}
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors"
+        />
+        {universeCount && paramCount === String(parseInt(universeCount) * 512) && (
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-zinc-600 font-mono">auto</span>
+        )}
+      </div>
+      <p className="text-xs text-zinc-600 mt-1">= universes × 512. Edit if not full.</p>
+    </div>
   </div>
-)}
+</div>
 
               {/* ---- MÉDIAS ---- */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
