@@ -23,6 +23,7 @@ type FileItem = {
   description: string | null
   fixture_count: number | null
   universe_count: number | null
+  param_count: number | null
 }
 
 type SiteStats = {
@@ -217,11 +218,11 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
               <span key={ext} className={`text-xs px-1.5 py-0.5 rounded font-mono border ${TYPE_COLORS[ext] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>.{ext}</span>
             ))}
           </div>
-          {(file.fixture_count || file.universe_count) && (
+          {(file.fixture_count || file.universe_count || file.param_count) && (
             <div className="flex gap-3 mb-2">
               {file.fixture_count && (
                 <span className="flex items-center gap-1 text-xs text-zinc-400">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.5-1.5 4.5-3 6H9c-1.5-1.5-3-3.5-3-6a6 6 0 0 1 6-6z"/>
                     <path d="M9 17h6"/>
                   </svg>
@@ -236,6 +237,16 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
                     <path d="M2 12h20"/>
                   </svg>
                   {file.universe_count}
+                </span>
+              )}
+              {file.param_count && (
+                <span className="flex items-center gap-1 text-xs text-zinc-400">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 6h16M4 10h16M4 14h8"/>
+                    <circle cx="15" cy="15" r="3"/>
+                    <path d="M15 12v1M15 18v1M12.27 13.27l.73.73M17.27 16.27l.73.73M12.27 16.73l.73-.73M17.27 13.73l.73-.73"/>
+                  </svg>
+                  {file.param_count.toLocaleString()}
                 </span>
               )}
             </div>

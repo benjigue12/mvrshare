@@ -427,7 +427,44 @@ for (const p of storedProjectPaths.slice(1)) {
 
           {/* ---- MÉTADONNÉES (si au moins un fichier) ---- */}
           {hasFiles && (
+
+            
             <>
+
+             {/* ---- MÉDIAS ---- */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+            <h2 className="text-sm font-medium text-zinc-300 mb-1">Medias <span className="text-red-400">*</span></h2>
+            <p className="text-xs text-zinc-500 mb-4">Add photos or a video of your show or project. Accepted: JPG, PNG, WEBP, MP4, MOV.</p>
+
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOverMedia(true) }}
+              onDragLeave={() => setDragOverMedia(false)}
+              onDrop={e => { e.preventDefault(); setDragOverMedia(false); addMediaFiles(e.dataTransfer.files) }}
+              onClick={() => mediaInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors mb-3 ${dragOverMedia ? 'border-amber-500 bg-amber-900/10' : 'border-zinc-700 hover:border-zinc-500'}`}
+            >
+              <p className="text-zinc-400 text-sm">Drop photos or videos here or <span className="text-amber-400">browse</span></p>
+              <input ref={mediaInputRef} type="file" multiple accept=".jpg,.jpeg,.png,.webp,.mp4,.mov" onChange={e => addMediaFiles(e.target.files)} className="hidden" />
+            </div>
+
+            {mediaFiles.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {mediaFiles.map(mf => (
+                  <div key={mf.id} className="relative group">
+                    {isImageFile(mf.ext) ? (
+                      <img src={URL.createObjectURL(mf.file)} alt={mf.file.name} className="w-full h-24 object-cover rounded-lg border border-zinc-700" />
+                    ) : (
+                      <div className={`w-full h-24 rounded-lg border flex items-center justify-center ${TYPE_COLORS[mf.ext] ?? 'bg-zinc-800 border-zinc-700'}`}>
+                        <span className="text-xs font-mono font-bold">.{mf.ext}</span>
+                      </div>
+                    )}
+                    <button type="button" onClick={() => setMediaFiles(prev => prev.filter(f => f.id !== mf.id))} className="absolute top-1 right-1 w-5 h-5 bg-zinc-900/80 rounded-full text-zinc-400 hover:text-red-400 transition-colors text-xs flex items-center justify-center opacity-0 group-hover:opacity-100">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
               {/* Titre + description */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
                 <h2 className="text-sm font-medium text-zinc-300">Project details</h2>
@@ -443,7 +480,7 @@ for (const p of storedProjectPaths.slice(1)) {
               </div>
 
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
-  <h2 className="text-sm font-medium text-zinc-300">Technical info <span className="text-zinc-600">(optional)</span></h2>
+  <h2 className="text-sm font-medium text-zinc-300">Fixtures & Universes <span className="text-zinc-600"></span></h2>
   <div className="grid grid-cols-3 gap-3">
     <div>
       <label className="text-xs text-zinc-500 font-mono mb-1.5 block">
@@ -502,44 +539,12 @@ for (const p of storedProjectPaths.slice(1)) {
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-zinc-600 font-mono">auto</span>
         )}
       </div>
-      <p className="text-xs text-zinc-600 mt-1">= universes × 512. Edit if not full.</p>
+      <p className="text-xs text-zinc-600 mt-1">= universes × 512</p>
     </div>
   </div>
 </div>
 
-              {/* ---- MÉDIAS ---- */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-medium text-zinc-300 mb-1">Photos & videos <span className="text-red-400">*</span></h2>
-            <p className="text-xs text-zinc-500 mb-4">Add photos or a video of your show or project. Accepted: JPG, PNG, WEBP, MP4, MOV.</p>
 
-            <div
-              onDragOver={e => { e.preventDefault(); setDragOverMedia(true) }}
-              onDragLeave={() => setDragOverMedia(false)}
-              onDrop={e => { e.preventDefault(); setDragOverMedia(false); addMediaFiles(e.dataTransfer.files) }}
-              onClick={() => mediaInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors mb-3 ${dragOverMedia ? 'border-amber-500 bg-amber-900/10' : 'border-zinc-700 hover:border-zinc-500'}`}
-            >
-              <p className="text-zinc-400 text-sm">Drop photos or videos here or <span className="text-amber-400">browse</span></p>
-              <input ref={mediaInputRef} type="file" multiple accept=".jpg,.jpeg,.png,.webp,.mp4,.mov" onChange={e => addMediaFiles(e.target.files)} className="hidden" />
-            </div>
-
-            {mediaFiles.length > 0 && (
-              <div className="grid grid-cols-3 gap-2">
-                {mediaFiles.map(mf => (
-                  <div key={mf.id} className="relative group">
-                    {isImageFile(mf.ext) ? (
-                      <img src={URL.createObjectURL(mf.file)} alt={mf.file.name} className="w-full h-24 object-cover rounded-lg border border-zinc-700" />
-                    ) : (
-                      <div className={`w-full h-24 rounded-lg border flex items-center justify-center ${TYPE_COLORS[mf.ext] ?? 'bg-zinc-800 border-zinc-700'}`}>
-                        <span className="text-xs font-mono font-bold">.{mf.ext}</span>
-                      </div>
-                    )}
-                    <button type="button" onClick={() => setMediaFiles(prev => prev.filter(f => f.id !== mf.id))} className="absolute top-1 right-1 w-5 h-5 bg-zinc-900/80 rounded-full text-zinc-400 hover:text-red-400 transition-colors text-xs flex items-center justify-center opacity-0 group-hover:opacity-100">✕</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
               {/* Venue type */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
