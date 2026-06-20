@@ -32,7 +32,9 @@ type SiteStats = {
   total_downloads: number
   total_fixtures: number
   total_universes: number
+  total_params: number
 }
+
 
 type Profile = {
   id: string
@@ -520,13 +522,14 @@ export default function Home() {
             <a href={profile ? '/upload' : '/auth'} className="border border-zinc-700 text-zinc-300 px-5 py-2.5 rounded-lg hover:border-zinc-500 hover:text-zinc-100 transition-colors">Upload a file</a>
           </div>
         </div>
-        {stats && (
+    {stats && (
   <div className="flex gap-12 mt-12 pt-10 border-t border-zinc-800">
   <StatCard label="Files" value={stats.total_files} />
   <StatCard label="Designers" value={stats.total_users} />
   <StatCard label="Downloads" value={stats.total_downloads} />
   <StatCard label="Fixtures" value={stats.total_fixtures} />
-  <StatCard label="Universes" value={stats.total_universes} /> 
+  <StatCard label="Universes" value={stats.total_universes} />
+  <StatCard label="Parameters" value={stats.total_params} />
   </div>
 )}
       </section>
