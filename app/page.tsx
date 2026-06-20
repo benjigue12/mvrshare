@@ -95,6 +95,51 @@ function isPdf(url: string) { return url.toLowerCase().includes('.pdf') }
 function isVideo(url: string) { return url.match(/\.(mp4|mov)$/i) !== null }
 function isImage(url: string) { return url.match(/\.(jpg|jpeg|png|webp)$/i) !== null }
 
+function RangeSlider({ label, min, max, value, onChange, step = 1 }: {
+  label: string
+  min: number
+  max: number
+  value: [number, number]
+  onChange: (v: [number, number]) => void
+  step?: number
+}) {
+  return (
+    <div className="px-3 py-2">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs text-zinc-400">{label}</span>
+        <span className="text-xs text-amber-300 font-mono">{value[0]} – {value[1]}</span>
+      </div>
+      <div className="relative h-1.5 bg-zinc-800 rounded-full">
+        <div
+          className="absolute h-1.5 bg-amber-400 rounded-full"
+          style={{
+            left: `${((value[0] - min) / (max - min)) * 100}%`,
+            right: `${100 - ((value[1] - min) / (max - min)) * 100}%`,
+          }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value[0]}
+          onChange={e => onChange([Math.min(Number(e.target.value), value[1]), value[1]])}
+          className="absolute top-1/2 -translate-y-1/2 w-full h-1.5 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400 [&::-webkit-slider-thumb]:cursor-pointer"
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value[1]}
+          onChange={e => onChange([value[0], Math.max(Number(e.target.value), value[0])])}
+          className="absolute top-1/2 -translate-y-1/2 w-full h-1.5 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400 [&::-webkit-slider-thumb]:cursor-pointer"
+        />
+      </div>
+    </div>
+  )
+}
+
 // ---- Dropdown générique ----
 function Dropdown({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -333,6 +378,10 @@ export default function Home() {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [menuOpen, setMenuOpen] = useState(false)
   const [showFavOnly, setShowFavOnly] = useState(false)
+  const [fixtureRange, setFixtureRange] = useState<[number, number]>([0, 1000])
+  const [universeRange, setUniverseRange] = useState<[number, number]>([0, 50])
+  const [paramRange, setParamRange] = useState<[number, number]>([0, 20000])
+  const [rangesActive, setRangesActive] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 24
   const supabase = createClient()
@@ -379,7 +428,10 @@ export default function Home() {
       const matchLicense = !licenseFilter || (f as any).license === licenseFilter
       const matchSearch = !search || f.title.toLowerCase().includes(search.toLowerCase()) || f.tags?.some(t => t.includes(search.toLowerCase()))
       const matchFav = !showFavOnly || favoriteIds.has(f.id)
-      return matchType && matchVenue && matchSearch && matchLicense && matchFav
+      const matchFixture = !rangesActive || !f.fixture_count || (f.fixture_count >= fixtureRange[0] && f.fixture_count <= fixtureRange[1])
+      const matchUniverse = !rangesActive || !f.universe_count || (f.universe_count >= universeRange[0] && f.universe_count <= universeRange[1])
+      const matchParam = !rangesActive || !f.param_count || (f.param_count >= paramRange[0] && f.param_count <= paramRange[1])
+      return matchType && matchVenue && matchSearch && matchLicense && matchFav && matchFixture && matchUniverse && matchParam
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -583,6 +635,26 @@ export default function Home() {
                 ))}
               </div>
             </Dropdown>
+
+            <Dropdown label={
+  rangesActive
+    ? <span className="text-amber-300">Tech filters</span>
+    : <span className="text-zinc-400">Fixtures / DMX</span>
+}>
+  <div className="w-64">
+    <RangeSlider label="Fixtures" min={0} max={1000} value={fixtureRange} onChange={v => { setFixtureRange(v); setRangesActive(true) }} step={10} />
+    <RangeSlider label="Universes" min={0} max={50} value={universeRange} onChange={v => { setUniverseRange(v); setRangesActive(true) }} />
+    <RangeSlider label="Parameters" min={0} max={20000} value={paramRange} onChange={v => { setParamRange(v); setRangesActive(true) }} step={100} />
+    {rangesActive && (
+      <button
+        onClick={() => { setFixtureRange([0, 1000]); setUniverseRange([0, 50]); setParamRange([0, 20000]); setRangesActive(false) }}
+        className="w-full text-xs text-zinc-500 hover:text-zinc-300 mt-1 px-3 py-2 text-left transition-colors border-t border-zinc-800"
+      >
+        Reset technical filters
+      </button>
+    )}
+  </div>
+</Dropdown>
 
             {activeFiltersCount > 0 && (
               <button
