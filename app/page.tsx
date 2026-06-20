@@ -242,9 +242,7 @@ function FileCard({ file, isFavorite, isLoggedIn, onToggleFav }: {
               {file.param_count && (
                 <span className="flex items-center gap-1 text-xs text-zinc-400">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 6h16M4 10h16M4 14h8"/>
-                    <circle cx="15" cy="15" r="3"/>
-                    <path d="M15 12v1M15 18v1M12.27 13.27l.73.73M17.27 16.27l.73.73M12.27 16.73l.73-.73M17.27 13.73l.73-.73"/>
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                   </svg>
                   {file.param_count.toLocaleString()}
                 </span>
