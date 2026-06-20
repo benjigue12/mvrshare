@@ -107,7 +107,25 @@ function RangeSlider({ label, min, max, value, onChange, step = 1 }: {
     <div className="px-3 py-2">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs text-zinc-400">{label}</span>
-        <span className="text-xs text-amber-300 font-mono">{value[0]} – {value[1]}</span>
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            value={value[0]}
+            min={min}
+            max={value[1]}
+            onChange={e => onChange([Math.min(Number(e.target.value), value[1]), value[1]])}
+            className="w-14 bg-zinc-800 border border-zinc-700 rounded px-1.5 py-0.5 text-xs text-amber-300 font-mono text-right focus:outline-none focus:border-amber-500"
+          />
+          <span className="text-zinc-600 text-xs">–</span>
+          <input
+            type="number"
+            value={value[1]}
+            min={value[0]}
+            max={max}
+            onChange={e => onChange([value[0], Math.max(Number(e.target.value), value[0])])}
+            className="w-14 bg-zinc-800 border border-zinc-700 rounded px-1.5 py-0.5 text-xs text-amber-300 font-mono text-right focus:outline-none focus:border-amber-500"
+          />
+        </div>
       </div>
       <div className="relative h-1.5 bg-zinc-800 rounded-full">
         <div
