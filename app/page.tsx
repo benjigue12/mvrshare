@@ -446,7 +446,7 @@ export default function Home() {
       }
     })
 
-  const activeFiltersCount = selectedTypes.length + (venueFilter ? 1 : 0) + (licenseFilter ? 1 : 0)
+  const activeFiltersCount = selectedTypes.length + (venueFilter ? 1 : 0) + (licenseFilter ? 1 : 0) + (rangesActive ? 1 : 0)
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
@@ -638,27 +638,19 @@ export default function Home() {
 
             <Dropdown label={
   rangesActive
-    ? <span className="text-amber-300">Tech filters</span>
-    : <span className="text-zinc-400">Fixtures / DMX</span>
+    ? <span className="text-amber-300">Filters</span>
+    : <span className="text-zinc-400">Filters</span>
 }>
   <div className="w-64">
-    <RangeSlider label="Fixtures" min={0} max={1000} value={fixtureRange} onChange={v => { setFixtureRange(v); setRangesActive(true) }} step={10} />
-    <RangeSlider label="Universes" min={0} max={50} value={universeRange} onChange={v => { setUniverseRange(v); setRangesActive(true) }} />
-    <RangeSlider label="Parameters" min={0} max={20000} value={paramRange} onChange={v => { setParamRange(v); setRangesActive(true) }} step={100} />
-    {rangesActive && (
-      <button
-        onClick={() => { setFixtureRange([0, 1000]); setUniverseRange([0, 50]); setParamRange([0, 20000]); setRangesActive(false) }}
-        className="w-full text-xs text-zinc-500 hover:text-zinc-300 mt-1 px-3 py-2 text-left transition-colors border-t border-zinc-800"
-      >
-        Reset technical filters
-      </button>
-    )}
+    <RangeSlider label="Fixtures Range" min={0} max={10000} value={fixtureRange} onChange={v => { setFixtureRange(v); setRangesActive(true) }} step={10} />
+    <RangeSlider label="Universes Range" min={0} max={1000} value={universeRange} onChange={v => { setUniverseRange(v); setRangesActive(true) }} />
+    <RangeSlider label="Parameters Range" min={0} max={512000} value={paramRange} onChange={v => { setParamRange(v); setRangesActive(true) }} step={100} />
   </div>
 </Dropdown>
 
             {activeFiltersCount > 0 && (
               <button
-                onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter('') ; setCurrentPage(1) }}
+                onClick={() => { setSelectedTypes([]); setVenueFilter(''); setLicenseFilter(''); setFixtureRange([0, 1000]); setUniverseRange([0, 50]); setParamRange([0, 20000]); setRangesActive(false) }}
                 className="text-xs text-zinc-500 hover:text-red-400 transition-colors px-2 py-2 flex items-center gap-1"
               >
                 ✕ Clear filters
