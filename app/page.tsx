@@ -35,7 +35,6 @@ type SiteStats = {
   total_params: number
 }
 
-
 type Profile = {
   id: string
   username: string
@@ -743,7 +742,7 @@ export default function Home() {
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-10">
             <button
-              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' }) }}
               disabled={currentPage === 1}
               className="px-3 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
@@ -763,7 +762,7 @@ export default function Home() {
                 ) : (
                   <button
                     key={p}
-                    onClick={() => { setCurrentPage(p as number); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                    onClick={() => { setCurrentPage(p as number); document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' }) }}
                     className={`w-9 h-9 text-sm rounded-lg border transition-colors ${
                       currentPage === p
                         ? 'bg-amber-400 text-zinc-950 border-amber-400 font-medium'
@@ -776,7 +775,7 @@ export default function Home() {
               )}
 
             <button
-              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' }) }}
               disabled={currentPage === totalPages}
               className="px-3 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 hover:border-zinc-600 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
